@@ -12,7 +12,7 @@
     .container { max-width: 1200px; margin: 0 auto; background: white; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2); }
     .navbar { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 1.5rem 2rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
     .navbar h1 { font-size: 1.8rem; }
-    .navbar-menu { display: flex; gap: 2rem; flex: 1; justify-content: center; }
+    .navbar-menu { display: flex; gap: 2rem; flex: 1; justify-content: center; flex-wrap: wrap; }
     .nav-btn { background: rgba(255, 255, 255, 0.1); color: white; border: none; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer; font-weight: 500; transition: all 0.3s; }
     .nav-btn:hover, .nav-btn.active { background: rgba(255, 255, 255, 0.2); }
     .language-select { background: rgba(255, 255, 255, 0.1); color: white; border: 1px solid rgba(255, 255, 255, 0.3); padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer; }
@@ -74,6 +74,7 @@
       <div class="navbar-menu">
         <button class="nav-btn active" data-translate="dashboard" onclick="changePage('dashboard', this)">Dashboard</button>
         <button class="nav-btn" data-translate="products" onclick="changePage('products', this)">Products</button>
+        <button class="nav-btn" data-translate="history" onclick="changePage('history', this)">History</button>
         <button class="nav-btn" data-translate="backup" onclick="changePage('export', this)">Backup</button>
       </div>
       <select class="language-select" id="langSelect" onchange="changeLanguage()">
@@ -106,6 +107,26 @@
         <div class="table-container">
           <table><thead><tr><th data-translate="name">Name</th><th data-translate="brand">Brand</th><th data-translate="purchasePrice">Purchase Price</th><th data-translate="salePrice">Sale Price</th><th data-translate="margin">Margin</th><th data-translate="quantity">Quantity</th><th data-translate="actions">Actions</th></tr></thead>
           <tbody id="productsList"><tr><td colspan="7" style="text-align: center; color: #999;" data-translate="noProducts">No products</td></tr></tbody></table>
+        </div>
+      </div>
+
+      <div id="history" class="page">
+        <div style="display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap;">
+          <h2 data-translate="historyTitle">Sales History</h2>
+          <button class="btn btn-warning" onclick="resetMargin()" data-translate="resetMargin">Reset Margin</button>
+        </div>
+        <div class="table-container" style="margin-top: 1rem;">
+          <table>
+            <thead>
+              <tr>
+                <th data-translate="saleDate">Date</th>
+                <th data-translate="saleProduct">Product</th>
+                <th data-translate="saleMargin">Margin</th>
+                <th data-translate="saleQuantity">Quantity</th>
+              </tr>
+            </thead>
+            <tbody id="historyList"><tr><td colspan="4" style="text-align: center; color: #999;" data-translate="noSales">No sales yet</td></tr></tbody>
+          </table>
         </div>
       </div>
 
@@ -151,6 +172,7 @@
     let sales = [];
     let currentEditId = null;
     let language = localStorage.getItem('lang') || 'en';
+    let marginOffset = parseFloat(localStorage.getItem('pharmaMarginOffset') || 0);
 
     const translations = {
       en: {
@@ -162,6 +184,7 @@
         totalProducts: 'Total Products',
         stockValue: 'Stock Value',
         marginRealized: 'Margin Realized',
+        history: 'History',
         recentProducts: 'Recently Added Products',
         productsTitle: 'Product Catalog',
         addProduct: 'Add Product',
@@ -173,6 +196,12 @@
         margin: 'Margin',
         quantity: 'Quantity',
         actions: 'Actions',
+        historyTitle: 'Sales History',
+        resetMargin: 'Reset Margin',
+        saleDate: 'Date',
+        saleProduct: 'Product',
+        saleMargin: 'Margin',
+        saleQuantity: 'Quantity',
         sell: 'Sell',
         undo: 'Undo',
         edit: 'Edit',
@@ -195,6 +224,7 @@
         save: 'Save',
         cancel: 'Cancel',
         noProducts: 'No products',
+        noSales: 'No sales yet',
         saleSuccess: 'Sale recorded! Margin: ',
         undoSuccess: 'Sale cancelled!',
         saveSuccess: 'Product saved successfully!',
@@ -204,7 +234,9 @@
         deleteConfirm: 'Are you sure you want to delete this product?',
         importConfirm: 'This will replace all current products. Continue?',
         stockError: 'Insufficient stock!',
-        noSaleToUndo: 'No recent sale to undo for this product!'
+        noSaleToUndo: 'No recent sale to undo for this product!',
+        resetConfirm: 'Reset realized margin to zero? History will stay.',
+        resetSuccess: 'Margin reset to zero.'
       },
       ar: {
         appTitle: 'Pharma Scanner',
@@ -215,6 +247,7 @@
         totalProducts: 'إجمالي المنتجات',
         stockValue: 'قيمة المخزون',
         marginRealized: 'الهامش المحقق',
+        history: 'السجل',
         recentProducts: 'المنتجات المضافة مؤخراً',
         productsTitle: 'كتالوج المنتجات',
         addProduct: 'إضافة منتج',
@@ -226,6 +259,12 @@
         margin: 'الهامش',
         quantity: 'الكمية',
         actions: 'الإجراءات',
+        historyTitle: 'سجل المبيعات',
+        resetMargin: 'تصفير الهامش',
+        saleDate: 'التاريخ',
+        saleProduct: 'المنتج',
+        saleMargin: 'الهامش',
+        saleQuantity: 'الكمية',
         sell: 'بيع',
         undo: 'تراجع',
         edit: 'تعديل',
@@ -248,6 +287,7 @@
         save: 'حفظ',
         cancel: 'إلغاء',
         noProducts: 'لا توجد منتجات',
+        noSales: 'لا توجد مبيعات بعد',
         saleSuccess: 'تم تسجيل البيع! الهامش: ',
         undoSuccess: 'تم إلغاء البيع!',
         saveSuccess: 'تم حفظ المنتج بنجاح!',
@@ -257,7 +297,9 @@
         deleteConfirm: 'هل أنت متأكد من حذف هذا المنتج؟',
         importConfirm: 'سيؤدي هذا إلى استبدال جميع المنتجات الحالية. متابعة؟',
         stockError: 'مخزون غير كافٍ!',
-        noSaleToUndo: 'لا توجد عملية بيع حديثة للتراجع عنها لهذا المنتج!'
+        noSaleToUndo: 'لا توجد عملية بيع حديثة للتراجع عنها لهذا المنتج!',
+        resetConfirm: 'تصفير الهامش المحقق؟ سيبقى السجل محفوظاً.',
+        resetSuccess: 'تم تصفير الهامش.'
       }
     };
 
@@ -302,6 +344,12 @@
         sales = [];
         localStorage.removeItem('pharmaSales');
       }
+      try {
+        marginOffset = parseFloat(localStorage.getItem('pharmaMarginOffset') || 0) || 0;
+      } catch (e) {
+        marginOffset = 0;
+        localStorage.removeItem('pharmaMarginOffset');
+      }
       renderAll();
     }
 
@@ -317,7 +365,8 @@
     function renderDashboard() {
       const total = products.length;
       const value = products.reduce((s, p) => s + (parseFloat(p.salePrice || 0) * parseFloat(p.quantity || 0)), 0);
-      const margin = sales.reduce((s, sale) => s + parseFloat(sale.margin || 0), 0);
+      const marginRaw = sales.reduce((s, sale) => s + parseFloat(sale.margin || 0), 0);
+      const margin = marginRaw - marginOffset;
       
       document.getElementById('totalProducts').textContent = total;
       document.getElementById('totalValue').textContent = value.toFixed(2) + '€';
@@ -329,6 +378,15 @@
         <td class="${parseFloat(p.margin || 0) < 0 ? 'margin-negative' : ''}">${parseFloat(p.margin || 0).toFixed(2)}€</td>
         <td>${p.quantity || 0}</td></tr>
       `).join('') : `<tr><td colspan="5" style="text-align: center; color: #999;">${t('noProducts')}</td></tr>`;
+    }
+
+    function renderHistory() {
+      const list = sales.slice().sort((a, b) => new Date(b.date) - new Date(a.date));
+      document.getElementById('historyList').innerHTML = list.length ? list.map(sale => {
+        const date = new Date(sale.date);
+        const formatted = `${date.toLocaleDateString()} ${date.toLocaleTimeString()}`;
+        return `<tr><td>${formatted}</td><td>${sale.productName}</td><td>${parseFloat(sale.margin || 0).toFixed(2)}€</td><td>-1</td></tr>`;
+      }).join('') : `<tr><td colspan="4" style="text-align: center; color: #999;">${t('noSales')}</td></tr>`;
     }
 
     function renderProducts() {
@@ -359,7 +417,8 @@
 
     function renderAll() { 
       renderDashboard(); 
-      renderProducts(); 
+      renderProducts();
+      renderHistory();
       applyTranslations();
     }
 
@@ -398,6 +457,15 @@
       saveProducts();
       saveSales();
       showAlert(t('undoSuccess'), 'success');
+    }
+
+    function resetMargin() {
+      if (!confirm(t('resetConfirm'))) return;
+      const totalMargin = sales.reduce((s, sale) => s + parseFloat(sale.margin || 0), 0);
+      marginOffset = totalMargin;
+      localStorage.setItem('pharmaMarginOffset', marginOffset);
+      renderAll();
+      showAlert(t('resetSuccess'), 'success');
     }
 
     function openAddForm() {
