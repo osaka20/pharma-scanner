@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#667eea;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#764ba2;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <circle cx="100" cy="100" r="90" fill="url(#grad1)"/>
+  <g fill="white">
+    <!-- Pill shape -->
+    <rect x="70" y="60" width="60" height="80" rx="30" ry="30"/>
+    <line x1="70" y1="100" x2="130" y2="100" stroke="url(#grad1)" stroke-width="4"/>
+    <!-- Plus sign -->
+    <path d="M 100 40 L 100 60 M 90 50 L 110 50" stroke="white" stroke-width="6" stroke-linecap="round"/>
+  </g>
+</svg>
