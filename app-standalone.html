@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pharma Scanner - Gestion de Pharmacie</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      color: #333;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    }
+
+    .navbar {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 1.5rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .navbar h1 {
+      font-size: 1.8rem;
+      margin: 0;
+    }
+
+    .navbar-menu {
+      display: flex;
+      gap: 2rem;
+      flex: 1;
+      justify-content: center;
+    }
+
+    .nav-btn {
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.3s;
+    }
+
+    .nav-btn:hover, .nav-btn.active {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .language-select {
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      padding: 0.5rem 1rem;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .language-select option {
+      background: #667eea;
+      color: white;
+    }
+
+    .content {
+      padding: 2rem;
+    }
+
+    .page {
+      display: none;
+    }
+
+    .page.active {
+      display: block;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 2rem;
+      margin-bottom: 2rem;
+    }
+
+    .stat-card {
+      background: white;
+      border: 1px solid #eee;
+      border-radius: 8px;
+      padding: 2rem;
+      text-align: center;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+
+    .stat-icon {
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .stat-label {
+      color: #666;
+      font-size: 0.9rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .stat-value {
+      font-size: 2rem;
+      font-weight: bold;
+      color: #667eea;
+    }
+
+    .btn {
+      padding: 0.75rem 1.5rem;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      transition: all 0.3s;
+    }
+
+    .btn-primary {
+      background: #667eea;
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: #5568d3;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-secondary {
+      background: #e0e0e0;
+      color: #333;
+    }
+
+    .btn-danger {
+      background: #ef5350;
+      color: white;
+    }
+
+    .btn-success {
+      background: #66bb6a;
+      color: white;
+    }
+
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 500;
+    }
+
+    .form-group input,
+    .form-group textarea {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 14px;
+      font-family: inherit;
+    }
+
+    .form-group input:focus,
+    .form-group textarea:focus {
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.1);
+    }
+
+    .table-container {
+      overflow-x: auto;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th {
+      background: #f5f5f5;
+      padding: 1rem;
+      text-align: left;
+      font-weight: 600;
+      border-bottom: 2px solid #ddd;
+    }
+
+    td {
+      padding: 1rem;
+      border-bottom: 1px solid #eee;
+    }
+
+    tbody tr:hover {
+      background: #f9f9f9;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal.active {
+      display: flex;
+    }
+
+    .modal-content {
+      background: white;
+      border-radius: 8px;
+      padding: 2rem;
+      max-width: 500px;
+      width: 90%;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .modal-header {
+      font-size: 1.5rem;
+      margin-bottom: 1.5rem;
+      font-weight: 600;
+    }
+
+    .modal-footer {
+      display: flex;
+      gap: 1rem;
+      justify-content: flex-end;
+      margin-top: 2rem;
+    }
+
+    .search-box {
+      margin-bottom: 2rem;
+    }
+
+    .search-box input {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+
+    .alert {
+      padding: 1rem;
+      border-radius: 4px;
+      margin-bottom: 1rem;
+      display: none;
+    }
+
+    .alert.show {
+      display: block;
+    }
+
+    .alert-success {
+      background: #e8f5e9;
+      border: 1px solid #66bb6a;
+      color: #2e7d32;
+    }
+
+    .alert-error {
+      background: #ffebee;
+      border: 1px solid #ef5350;
+      color: #c62828;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+    }
+
+    .margin-negative {
+      color: #ef5350;
+      font-weight: bold;
+    }
+
+    h2 {
+      margin-bottom: 1.5rem;
+      color: #333;
+    }
+
+    .actions {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .actions .btn {
+      padding: 0.5rem 1rem;
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Navbar -->
+    <div class="navbar">
+      <h1>💊 Pharma Scanner</h1>
+      <div class="navbar-menu">
+        <button class="nav-btn active" onclick="showPage('dashboard')">Tableau de Bord</button>
+        <button class="nav-btn" onclick="showPage('products')">Produits</button>
+        <button class="nav-btn" onclick="showPage('export')">Sauvegarde</button>
+      </div>
+      <select class="language-select" id="langSelect" onchange="changeLanguage()">
+        <option value="fr">🇫🇷 Français</option>
+        <option value="en">🇬🇧 English</option>
+      </select>
+    </div>
+
+    <!-- Content -->
+    <div class="content">
+      <div id="alert" class="alert"></div>
+
+      <!-- Dashboard -->
+      <div id="dashboard" class="page active">
+        <h2>Tableau de Bord</h2>
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon">📦</div>
+            <div class="stat-label">Total Produits</div>
+            <div class="stat-value" id="totalProducts">0</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">💰</div>
+            <div class="stat-label">Valeur Stock</div>
+            <div class="stat-value" id="totalValue">0€</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">📈</div>
+            <div class="stat-label">Marge Totale</div>
+            <div class="stat-value" id="totalMargin">0€</div>
+          </div>
+        </div>
+
+        <h3>Produits Récemment Ajoutés</h3>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Nom</th>
+                <th>Marque</th>
+                <th>Prix Vente</th>
+                <th>Marge</th>
+                <th>Quantité</th>
+              </tr>
+            </thead>
+            <tbody id="recentProducts">
+              <tr><td colspan="5" style="text-align: center; color: #999;">Aucun produit</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Products -->
+      <div id="products" class="page">
+        <h2>Catalogue des Produits</h2>
+        <div style="margin-bottom: 1rem;">
+          <button class="btn btn-primary" onclick="openAddForm()">+ Ajouter un Produit</button>
+        </div>
+
+        <div class="search-box">
+          <input type="text" placeholder="Rechercher par nom, marque ou code..." id="searchInput" onkeyup="filterProducts()">
+        </div>
+
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Nom</th>
+                <th>Marque</th>
+                <th>Prix Achat</th>
+                <th>Prix Vente</th>
+                <th>Marge</th>
+                <th>Quantité</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="productsList">
+              <tr><td colspan="7" style="text-align: center; color: #999;">Aucun produit</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Export/Import -->
+      <div id="export" class="page">
+        <h2>Sauvegarde & Restauration</h2>
+        <div class="grid-2">
+          <div style="background: #f9f9f9; padding: 2rem; border-radius: 8px; text-align: center;">
+            <div style="font-size: 2rem; margin-bottom: 1rem;">📤</div>
+            <h3>Exporter</h3>
+            <p style="margin-bottom: 1rem; color: #666;">Télécharger une sauvegarde JSON</p>
+            <button class="btn btn-success" onclick="exportData()">Exporter en JSON</button>
+          </div>
+
+          <div style="background: #f9f9f9; padding: 2rem; border-radius: 8px; text-align: center;">
+            <div style="font-size: 2rem; margin-bottom: 1rem;">📥</div>
+            <h3>Importer</h3>
+            <p style="margin-bottom: 1rem; color: #666;">Restaurer une sauvegarde précédente</p>
+            <input type="file" id="importFile" accept=".json" style="display: none;" onchange="handleImport()">
+            <button class="btn btn-primary" onclick="document.getElementById('importFile').click()">Importer un Fichier</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Form Modal -->
+  <div id="formModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header" id="formTitle">Ajouter un Produit</div>
+      <form id="productForm" onsubmit="saveProduct(event)">
+        <div class="form-group">
+          <label>Nom du Produit *</label>
+          <input type="text" id="formName" required>
+        </div>
+
+        <div class="form-group">
+          <label>Marque *</label>
+          <input type="text" id="formBrand" required>
+        </div>
+
+        <div class="form-group">
+          <label>Code Produit</label>
+          <input type="text" id="formCode">
+        </div>
+
+        <div class="form-group">
+          <label>Prix d'Achat €</label>
+          <input type="number" id="formPurchasePrice" step="0.01" min="0" onchange="calculateMargin()">
+        </div>
+
+        <div class="form-group">
+          <label>Prix de Vente €</label>
+          <input type="number" id="formSalePrice" step="0.01" min="0" onchange="calculateMargin()">
+        </div>
+
+        <div class="form-group">
+          <label>Marge (Calculée)</label>
+          <input type="number" id="formMargin" step="0.01" readonly style="background: #f5f5f5;">
+        </div>
+
+        <div class="form-group">
+          <label>Quantité en Stock</label>
+          <input type="number" id="formQuantity" step="1" min="0" value="0">
+        </div>
+
+        <div class="form-group">
+          <label>Notes</label>
+          <textarea id="formNotes" rows="3"></textarea>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeForm()">Annuler</button>
+          <button type="submit" class="btn btn-primary">Enregistrer</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // 🗄️ App State
+    let products = [];
+    let currentEditId = null;
+    let language = localStorage.getItem('lang') || 'fr';
+
+    // 📝 Traductions
+    const translations = {
+      fr: {
+        'Total Produits': 'Total Produits',
+        'Valeur Stock': 'Valeur Stock',
+        'Marge Totale': 'Marge Totale',
+        'Aucun produit': 'Aucun produit',
+        'successSave': 'Produit enregistré avec succès!',
+        'successDelete': 'Produit supprimé avec succès!',
+        'successExport': 'Données exportées avec succès!',
+        'successImport': 'Données importées avec succès!',
+        'confirmDelete': 'Êtes-vous sûr de vouloir supprimer ce produit?',
+        'confirmImport': 'Ceci remplacera tous les produits actuels. Continuer?'
+      },
+      en: {
+        'Total Produits': 'Total Products',
+        'Valeur Stock': 'Stock Value',
+        'Marge Totale': 'Total Margin',
+        'Aucun produit': 'No products',
+        'successSave': 'Product saved successfully!',
+        'successDelete': 'Product deleted successfully!',
+        'successExport': 'Data exported successfully!',
+        'successImport': 'Data imported successfully!',
+        'confirmDelete': 'Are you sure you want to delete this product?',
+        'confirmImport': 'This will replace all current products. Continue?'
+      }
+    };
+
+    // 🔄 Change Language
+    function changeLanguage() {
+      language = document.getElementById('langSelect').value;
+      localStorage.setItem('lang', language);
+      location.reload();
+    }
+
+    // 📂 Load Products from localStorage
+    function loadProducts() {
+      const saved = localStorage.getItem('pharmaProducts');
+      products = saved ? JSON.parse(saved) : [];
+      renderAll();
+    }
+
+    // 💾 Save Products to localStorage
+    function saveProducts() {
+      localStorage.setItem('pharmaProducts', JSON.stringify(products));
+      renderAll();
+    }
+
+    // 📊 Render Dashboard
+    function renderDashboard() {
+      const total = products.length;
+      const value = products.reduce((sum, p) => sum + (parseFloat(p.salePrice || 0) * parseFloat(p.quantity || 0)), 0);
+      const margin = products.reduce((sum, p) => sum + (parseFloat(p.margin || 0) * parseFloat(p.quantity || 0)), 0);
+
+      document.getElementById('totalProducts').textContent = total;
+      document.getElementById('totalValue').textContent = value.toFixed(2) + '€';
+      document.getElementById('totalMargin').textContent = margin.toFixed(2) + '€';
+
+      const recent = products.slice(-5).reverse();
+      const html = recent.length ? recent.map(p => `
+        <tr>
+          <td>${p.name}</td>
+          <td>${p.brand}</td>
+          <td>${parseFloat(p.salePrice || 0).toFixed(2)}€</td>
+          <td class="${parseFloat(p.margin || 0) < 0 ? 'margin-negative' : ''}">${parseFloat(p.margin || 0).toFixed(2)}€</td>
+          <td>${p.quantity || 0}</td>
+        </tr>
+      `).join('') : '<tr><td colspan="5" style="text-align: center; color: #999;">Aucun produit</td></tr>';
+
+      document.getElementById('recentProducts').innerHTML = html;
+    }
+
+    // 📋 Render Products Table
+    function renderProducts() {
+      const search = document.getElementById('searchInput').value.toLowerCase();
+      const filtered = products.filter(p =>
+        p.name.toLowerCase().includes(search) ||
+        p.brand.toLowerCase().includes(search) ||
+        (p.code && p.code.toLowerCase().includes(search))
+      );
+
+      const html = filtered.length ? filtered.map(p => `
+        <tr>
+          <td>${p.name}</td>
+          <td>${p.brand}</td>
+          <td>${parseFloat(p.purchasePrice || 0).toFixed(2)}€</td>
+          <td>${parseFloat(p.salePrice || 0).toFixed(2)}€</td>
+          <td class="${parseFloat(p.margin || 0) < 0 ? 'margin-negative' : ''}">${parseFloat(p.margin || 0).toFixed(2)}€</td>
+          <td>${p.quantity || 0}</td>
+          <td class="actions">
+            <button class="btn btn-secondary" onclick="editProduct(${p.id})">Modifier</button>
+            <button class="btn btn-danger" onclick="deleteProduct(${p.id})">Supprimer</button>
+          </td>
+        </tr>
+      `).join('') : '<tr><td colspan="7" style="text-align: center; color: #999;">Aucun produit</td></tr>';
+
+      document.getElementById('productsList').innerHTML = html;
+    }
+
+    // 🔄 Render All
+    function renderAll() {
+      renderDashboard();
+      renderProducts();
+    }
+
+    // ➕ Open Add Form
+    function openAddForm() {
+      currentEditId = null;
+      document.getElementById('formTitle').textContent = 'Ajouter un Produit';
+      document.getElementById('productForm').reset();
+      document.getElementById('formModal').classList.add('active');
+    }
+
+    // ✏️ Edit Product
+    function editProduct(id) {
+      const product = products.find(p => p.id === id);
+      if (!product) return;
+
+      currentEditId = id;
+      document.getElementById('formTitle').textContent = 'Modifier le Produit';
+      document.getElementById('formName').value = product.name;
+      document.getElementById('formBrand').value = product.brand;
+      document.getElementById('formCode').value = product.code || '';
+      document.getElementById('formPurchasePrice').value = product.purchasePrice || '';
+      document.getElementById('formSalePrice').value = product.salePrice || '';
+      document.getElementById('formMargin').value = product.margin || '';
+      document.getElementById('formQuantity').value = product.quantity || '';
+      document.getElementById('formNotes').value = product.notes || '';
+      document.getElementById('formModal').classList.add('active');
+    }
+
+    // 🗑️ Delete Product
+    function deleteProduct(id) {
+      if (!confirm(translations[language]['confirmDelete'])) return;
+      products = products.filter(p => p.id !== id);
+      saveProducts();
+      showAlert(translations[language]['successDelete'], 'success');
+    }
+
+    // 💾 Save Product
+    function saveProduct(event) {
+      event.preventDefault();
+
+      const product = {
+        id: currentEditId || Date.now(),
+        name: document.getElementById('formName').value,
+        brand: document.getElementById('formBrand').value,
+        code: document.getElementById('formCode').value,
+        purchasePrice: parseFloat(document.getElementById('formPurchasePrice').value || 0),
+        salePrice: parseFloat(document.getElementById('formSalePrice').value || 0),
+        margin: parseFloat(document.getElementById('formMargin').value || 0),
+        quantity: parseInt(document.getElementById('formQuantity').value || 0),
+        notes: document.getElementById('formNotes').value
+      };
+
+      if (currentEditId) {
+        const index = products.findIndex(p => p.id === currentEditId);
+        products[index] = product;
+      } else {
+        products.push(product);
+      }
+
+      saveProducts();
+      closeForm();
+      showAlert(translations[language]['successSave'], 'success');
+    }
+
+    // 🧮 Calculate Margin
+    function calculateMargin() {
+      const purchase = parseFloat(document.getElementById('formPurchasePrice').value || 0);
+      const sale = parseFloat(document.getElementById('formSalePrice').value || 0);
+      document.getElementById('formMargin').value = (sale - purchase).toFixed(2);
+    }
+
+    // ❌ Close Form
+    function closeForm() {
+      document.getElementById('formModal').classList.remove('active');
+    }
+
+    // 🔍 Filter Products
+    function filterProducts() {
+      renderProducts();
+    }
+
+    // 📤 Export Data
+    function exportData() {
+      const data = { version: 1, exportDate: new Date().toISOString(), products };
+      const json = JSON.stringify(data, null, 2);
+      const blob = new Blob([json], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `pharma-db-${new Date().toISOString().split('T')[0]}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+      showAlert(translations[language]['successExport'], 'success');
+    }
+
+    // 📥 Import Data
+    function handleImport() {
+      const file = document.getElementById('importFile').files[0];
+      if (!file) return;
+
+      if (!confirm(translations[language]['confirmImport'])) {
+        document.getElementById('importFile').value = '';
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const data = JSON.parse(e.target.result);
+          products = data.products || [];
+          saveProducts();
+          showAlert(translations[language]['successImport'], 'success');
+          document.getElementById('importFile').value = '';
+        } catch (error) {
+          showAlert('Erreur lors de l\'import: ' + error.message, 'error');
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    // 💬 Show Alert
+    function showAlert(message, type) {
+      const alert = document.getElementById('alert');
+      alert.textContent = message;
+      alert.className = `alert show alert-${type}`;
+      setTimeout(() => alert.classList.remove('show'), 3000);
+    }
+
+    // 📄 Show Page
+    function showPage(page) {
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.getElementById(page).classList.add('active');
+      document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+      event.target.classList.add('active');
+    }
+
+    // 🚀 Init
+    document.getElementById('langSelect').value = language;
+    loadProducts();
+  </script>
+</body>
+</html>
