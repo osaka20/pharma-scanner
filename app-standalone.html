@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en" dir="ltr">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,6 +7,8 @@
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; color: #333; }
+    [dir="rtl"] { text-align: right; }
+    [dir="rtl"] .navbar-menu { flex-direction: row-reverse; }
     .container { max-width: 1200px; margin: 0 auto; background: white; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2); }
     .navbar { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 1.5rem 2rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
     .navbar h1 { font-size: 1.8rem; }
@@ -28,9 +30,13 @@
     .btn-secondary { background: #e0e0e0; color: #333; }
     .btn-danger { background: #ef5350; color: white; }
     .btn-success { background: #66bb6a; color: white; }
+    .btn-warning { background: #ffb74d; color: white; }
     .sale-btn { padding: 0.5rem 1rem; background: #66bb6a; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; }
     .sale-btn:hover { background: #57a35b; }
     .sale-btn:disabled { background: #ccc; cursor: not-allowed; }
+    .undo-btn { padding: 0.5rem 1rem; background: #ffb74d; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; }
+    .undo-btn:hover { background: #ff9800; }
+    .undo-btn:disabled { background: #ccc; cursor: not-allowed; }
     .form-group { margin-bottom: 1.5rem; }
     .form-group label { display: block; margin-bottom: 0.5rem; font-weight: 500; }
     .form-group input, .form-group textarea { width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; font-family: inherit; }
@@ -38,7 +44,9 @@
     .table-container { overflow-x: auto; background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05); }
     table { width: 100%; border-collapse: collapse; }
     th { background: #f5f5f5; padding: 1rem; text-align: left; font-weight: 600; border-bottom: 2px solid #ddd; }
-    td { padding: 1rem; border-bottom: 1px solid #eee; }
+    [dir="rtl"] th { text-align: right; }
+    td { padding: 1rem; border-bottom: 1px solid #eee; text-align: left; }
+    [dir="rtl"] td { text-align: right; }
     tbody tr:hover { background: #f9f9f9; }
     .modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.5); z-index: 1000; align-items: center; justify-content: center; }
     .modal.active { display: flex; }
@@ -54,18 +62,19 @@
     .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; }
     .margin-negative { color: #ef5350; font-weight: bold; }
     h2 { margin-bottom: 1.5rem; color: #333; }
-    .actions { display: flex; gap: 0.5rem; }
+    h3 { margin-bottom: 1rem; color: #555; }
+    .actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
     .actions .btn { padding: 0.5rem 1rem; font-size: 12px; }
   </style>
 </head>
 <body>
   <div class="container">
     <div class="navbar">
-      <h1 data-lang="title">Pharma Scanner</h1>
+      <h1 data-translate="appTitle">Pharma Scanner</h1>
       <div class="navbar-menu">
-        <button class="nav-btn active" data-lang="navDashboard" onclick="showPage('dashboard', this)">Dashboard</button>
-        <button class="nav-btn" data-lang="navProducts" onclick="showPage('products', this)">Products</button>
-        <button class="nav-btn" data-lang="navBackup" onclick="showPage('export', this)">Backup</button>
+        <button class="nav-btn active" data-translate="dashboard" onclick="changePage('dashboard', this)">Dashboard</button>
+        <button class="nav-btn" data-translate="products" onclick="changePage('products', this)">Products</button>
+        <button class="nav-btn" data-translate="backup" onclick="changePage('export', this)">Backup</button>
       </div>
       <select class="language-select" id="langSelect" onchange="changeLanguage()">
         <option value="en">English</option>
@@ -77,40 +86,40 @@
       <div id="alert" class="alert"></div>
 
       <div id="dashboard" class="page active">
-        <h2 data-lang="navDashboard">Dashboard</h2>
+        <h2 data-translate="dashboardTitle">Dashboard</h2>
         <div class="stats-grid">
-          <div class="stat-card"><div class="stat-label" data-lang="totalProducts">Total Products</div><div class="stat-value" id="totalProducts">0</div></div>
-          <div class="stat-card"><div class="stat-label" data-lang="stockValue">Stock Value</div><div class="stat-value" id="totalValue">0€</div></div>
-          <div class="stat-card"><div class="stat-label" data-lang="marginRealized">Margin Realized</div><div class="stat-value" id="totalMargin">0€</div></div>
+          <div class="stat-card"><div class="stat-label" data-translate="totalProducts">Total Products</div><div class="stat-value" id="totalProducts">0</div></div>
+          <div class="stat-card"><div class="stat-label" data-translate="stockValue">Stock Value</div><div class="stat-value" id="totalValue">0€</div></div>
+          <div class="stat-card"><div class="stat-label" data-translate="marginRealized">Margin Realized</div><div class="stat-value" id="totalMargin">0€</div></div>
         </div>
-        <h3 data-lang="recentProducts">Recently Added Products</h3>
+        <h3 data-translate="recentProducts">Recently Added Products</h3>
         <div class="table-container">
-          <table><thead><tr><th data-lang="name">Name</th><th data-lang="brand">Brand</th><th data-lang="salePrice">Sale Price</th><th data-lang="margin">Margin</th><th data-lang="quantity">Quantity</th></tr></thead>
-          <tbody id="recentProducts"><tr><td colspan="5" style="text-align: center; color: #999;">No products</td></tr></tbody></table>
+          <table><thead><tr><th data-translate="name">Name</th><th data-translate="brand">Brand</th><th data-translate="salePrice">Sale Price</th><th data-translate="margin">Margin</th><th data-translate="quantity">Quantity</th></tr></thead>
+          <tbody id="recentProducts"><tr><td colspan="5" style="text-align: center; color: #999;" data-translate="noProducts">No products</td></tr></tbody></table>
         </div>
       </div>
 
       <div id="products" class="page">
-        <h2 data-lang="productCatalog">Product Catalog</h2>
-        <div style="margin-bottom: 1rem;"><button class="btn btn-primary" data-lang="addProduct" onclick="openAddForm()">Add Product</button></div>
-        <div class="search-box"><input type="text" id="searchInput" onkeyup="filterProducts()" data-lang="searchPlaceholder" placeholder="Search..."></div>
+        <h2 data-translate="productsTitle">Product Catalog</h2>
+        <div style="margin-bottom: 1rem;"><button class="btn btn-primary" onclick="openAddForm()" data-translate="addProduct">Add Product</button></div>
+        <div class="search-box"><input type="text" id="searchInput" onkeyup="filterProducts()" data-translate-placeholder="searchPlaceholder" placeholder="Search..."></div>
         <div class="table-container">
-          <table><thead><tr><th data-lang="name">Name</th><th data-lang="brand">Brand</th><th data-lang="purchasePrice">Purchase Price</th><th data-lang="salePrice">Sale Price</th><th data-lang="margin">Margin</th><th data-lang="quantity">Quantity</th><th data-lang="actions">Actions</th></tr></thead>
-          <tbody id="productsList"><tr><td colspan="7" style="text-align: center; color: #999;">No products</td></tr></tbody></table>
+          <table><thead><tr><th data-translate="name">Name</th><th data-translate="brand">Brand</th><th data-translate="purchasePrice">Purchase Price</th><th data-translate="salePrice">Sale Price</th><th data-translate="margin">Margin</th><th data-translate="quantity">Quantity</th><th data-translate="actions">Actions</th></tr></thead>
+          <tbody id="productsList"><tr><td colspan="7" style="text-align: center; color: #999;" data-translate="noProducts">No products</td></tr></tbody></table>
         </div>
       </div>
 
       <div id="export" class="page">
-        <h2 data-lang="backup">Backup & Restore</h2>
+        <h2 data-translate="backupTitle">Backup & Restore</h2>
         <div class="grid-2">
           <div style="background: #f9f9f9; padding: 2rem; border-radius: 8px; text-align: center;">
-            <h3 data-lang="export">Export</h3><p style="margin-bottom: 1rem; color: #666;" data-lang="exportDesc">Download JSON backup</p>
-            <button class="btn btn-success" data-lang="exportBtn" onclick="exportData()">Export to JSON</button>
+            <h3 data-translate="exportTitle">Export</h3><p style="margin-bottom: 1rem; color: #666;" data-translate="exportDesc">Download JSON backup</p>
+            <button class="btn btn-success" onclick="exportData()" data-translate="exportBtn">Export to JSON</button>
           </div>
           <div style="background: #f9f9f9; padding: 2rem; border-radius: 8px; text-align: center;">
-            <h3 data-lang="import">Import</h3><p style="margin-bottom: 1rem; color: #666;" data-lang="importDesc">Restore previous backup</p>
+            <h3 data-translate="importTitle">Import</h3><p style="margin-bottom: 1rem; color: #666;" data-translate="importDesc">Restore previous backup</p>
             <input type="file" id="importFile" accept=".json" style="display: none;" onchange="handleImport()">
-            <button class="btn btn-primary" data-lang="importBtn" onclick="document.getElementById('importFile').click()">Import File</button>
+            <button class="btn btn-primary" onclick="document.getElementById('importFile').click()" data-translate="importBtn">Import File</button>
           </div>
         </div>
       </div>
@@ -119,40 +128,44 @@
 
   <div id="formModal" class="modal">
     <div class="modal-content">
-      <div class="modal-header" id="formTitle">Add Product</div>
+      <div class="modal-header" id="formTitle" data-translate="addProductTitle">Add Product</div>
       <form id="productForm" onsubmit="saveProduct(event)">
-        <div class="form-group"><label data-lang="productName">Product Name *</label><input type="text" id="formName" required></div>
-        <div class="form-group"><label data-lang="productBrand">Brand *</label><input type="text" id="formBrand" required></div>
-        <div class="form-group"><label data-lang="productCode">Product Code</label><input type="text" id="formCode"></div>
-        <div class="form-group"><label data-lang="priceLabel">Purchase Price</label><input type="number" id="formPurchasePrice" step="0.01" min="0" onchange="calculateMargin()"></div>
-        <div class="form-group"><label data-lang="salePriceLabel">Sale Price</label><input type="number" id="formSalePrice" step="0.01" min="0" onchange="calculateMargin()"></div>
-        <div class="form-group"><label data-lang="marginLabel">Margin (Calculated)</label><input type="number" id="formMargin" step="0.01" readonly style="background: #f5f5f5;"></div>
-        <div class="form-group"><label data-lang="quantityLabel">Stock Quantity</label><input type="number" id="formQuantity" step="1" min="0" value="0"></div>
-        <div class="form-group"><label data-lang="notes">Notes</label><textarea id="formNotes" rows="3"></textarea></div>
+        <div class="form-group"><label data-translate="productName">Product Name *</label><input type="text" id="formName" required></div>
+        <div class="form-group"><label data-translate="brandName">Brand *</label><input type="text" id="formBrand" required></div>
+        <div class="form-group"><label data-translate="productCode">Product Code</label><input type="text" id="formCode"></div>
+        <div class="form-group"><label data-translate="purchasePrice">Purchase Price</label><input type="number" id="formPurchasePrice" step="0.01" min="0" onchange="calculateMargin()"></div>
+        <div class="form-group"><label data-translate="salePrice">Sale Price</label><input type="number" id="formSalePrice" step="0.01" min="0" onchange="calculateMargin()"></div>
+        <div class="form-group"><label data-translate="marginCalculated">Margin (Calculated)</label><input type="number" id="formMargin" step="0.01" readonly style="background: #f5f5f5;"></div>
+        <div class="form-group"><label data-translate="stockQuantity">Stock Quantity</label><input type="number" id="formQuantity" step="1" min="0" value="0"></div>
+        <div class="form-group"><label data-translate="notes">Notes</label><textarea id="formNotes" rows="3"></textarea></div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-lang="cancel" onclick="closeForm()">Cancel</button>
-          <button type="submit" class="btn btn-primary" data-lang="save">Save</button>
+          <button type="button" class="btn btn-secondary" onclick="closeForm()" data-translate="cancel">Cancel</button>
+          <button type="submit" class="btn btn-primary" data-translate="save">Save</button>
         </div>
       </form>
     </div>
   </div>
 
   <script>
-let products = [], sales = [], currentEditId = null, language = localStorage.getItem('lang') || 'en';
+    let products = [];
+    let sales = [];
+    let currentEditId = null;
+    let language = localStorage.getItem('lang') || 'en';
 
     const translations = {
       en: {
-        title: 'Pharma Scanner',
-        navDashboard: 'Dashboard',
-        navProducts: 'Products',
-        navBackup: 'Backup',
+        appTitle: 'Pharma Scanner',
+        dashboard: 'Dashboard',
+        products: 'Products',
+        backup: 'Backup',
+        dashboardTitle: 'Dashboard',
         totalProducts: 'Total Products',
         stockValue: 'Stock Value',
         marginRealized: 'Margin Realized',
         recentProducts: 'Recently Added Products',
-        productCatalog: 'Product Catalog',
+        productsTitle: 'Product Catalog',
         addProduct: 'Add Product',
-        searchPlaceholder: 'Search...',
+        searchPlaceholder: 'Search by name, brand or code...',
         name: 'Name',
         brand: 'Brand',
         purchasePrice: 'Purchase Price',
@@ -161,71 +174,51 @@ let products = [], sales = [], currentEditId = null, language = localStorage.get
         quantity: 'Quantity',
         actions: 'Actions',
         sell: 'Sell',
-        unsell: 'Unsell',
+        undo: 'Undo',
         edit: 'Edit',
         delete: 'Delete',
-        backup: 'Backup & Restore',
-        export: 'Export',
+        backupTitle: 'Backup & Restore',
+        exportTitle: 'Export',
         exportDesc: 'Download JSON backup',
-        exportBtn: '`<tr><td colspan="5" style="text-align: center; color: #999;">${t('noProducts')}</td></tr>`;
-      
-      const recentSales = sales.slice(-10).reverse();
-      const salesHtml = recentSales.length ? recentSales.map(s => `
-        <tr><td>${s.productName}</td><td>${parseFloat(s.margin || 0).toFixed(2)}€</td>
-        <td><button class="btn btn-danger" style="padding: 0.3rem 0.8rem; font-size: 11px;" onclick="unsellProduct(${s.id})">${t('unsell')}</button></td></tr>
-      `).join('') : `<tr><td colspan="3" style="text-align: center; color: #999;">${t('noProducts')}</td></tr>`;
-      
-      if (!document.getElementById('salesTable')) {
-        const salesSection = `
-          <h3 style="margin-top: 2rem;">${t('recentSales')}</h3>
-          <div class="table-container">
-            <table><thead><tr><th>${t('name')}</th><th>${t('margin')}</th><th>${t('actions')}</th></tr></thead>
-            <tbody id="salesTable">${salesHtml}</tbody></table>
-          </div>`;
-        document.querySelector('#dashboard .table-container').insertAdjacentHTML('afterend', salesSection);
-      } else {
-        document.getElementById('salesTable').innerHTML = salesHtml;
-      }
-        import: 'Import',
+        exportBtn: 'Export to JSON',
+        importTitle: 'Import',
         importDesc: 'Restore previous backup',
         importBtn: 'Import File',
-        formAdd: 'Add Product',
-        formEdit: 'Edit Product',
+        addProductTitle: 'Add Product',
+        editProductTitle: 'Edit Product',
         productName: 'Product Name *',
-        productBrand: 'Brand *',
+        brandName: 'Brand *',
         productCode: 'Product Code',
-        priceLabel: 'Purchase Price',
-        salePriceLabel: 'Sale Price',
-        marginLabel: 'Margin (Calculated)',
-        quantityLabel: 'Stock Quantity',
+        marginCalculated: 'Margin (Calculated)',
+        stockQuantity: 'Stock Quantity',
         notes: 'Notes',
-        cancel: 'Cancel',
         save: 'Save',
+        cancel: 'Cancel',
         noProducts: 'No products',
-        successSave: 'Product saved successfully!',
-        successDelete: 'Product deleted successfully!',
-        successSale: 'Sale recorded! Margin: ',
-        successUnsell: 'Sale cancelled! Margin refunded: ',
-        successExport: 'Data exported successfully!',
-        successImport: 'Data imported successfully!',
-        confirmDelete: 'Are you sure you want to delete this product?',
-        confirmImport: 'This will replace all current products. Continue?',
-        errorNoStock: 'Insufficient stock!',
-        errorNoSale: 'No recent sale to cancel!',
-        recentSales: 'Recent Sales'
+        saleSuccess: 'Sale recorded! Margin: ',
+        undoSuccess: 'Sale cancelled!',
+        saveSuccess: 'Product saved successfully!',
+        deleteSuccess: 'Product deleted successfully!',
+        exportSuccess: 'Data exported successfully!',
+        importSuccess: 'Data imported successfully!',
+        deleteConfirm: 'Are you sure you want to delete this product?',
+        importConfirm: 'This will replace all current products. Continue?',
+        stockError: 'Insufficient stock!',
+        noSaleToUndo: 'No recent sale to undo for this product!'
       },
       ar: {
-        title: 'ماسح الصيدلية',
-        navDashboard: 'لوحة التحكم',
-        navProducts: 'المنتجات',
-        navBackup: 'النسخ الاحتياطي',
+        appTitle: 'Pharma Scanner',
+        dashboard: 'لوحة المعلومات',
+        products: 'المنتجات',
+        backup: 'النسخ الاحتياطي',
+        dashboardTitle: 'لوحة المعلومات',
         totalProducts: 'إجمالي المنتجات',
         stockValue: 'قيمة المخزون',
         marginRealized: 'الهامش المحقق',
-        recentProducts: 'المنتجات المضافة مؤخرًا',
-        productCatalog: 'كتالوج المنتجات',
+        recentProducts: 'المنتجات المضافة مؤخراً',
+        productsTitle: 'كتالوج المنتجات',
         addProduct: 'إضافة منتج',
-        searchPlaceholder: 'بحث...',
+        searchPlaceholder: 'البحث بالاسم أو العلامة التجارية أو الرمز...',
         name: 'الاسم',
         brand: 'العلامة التجارية',
         purchasePrice: 'سعر الشراء',
@@ -234,40 +227,37 @@ let products = [], sales = [], currentEditId = null, language = localStorage.get
         quantity: 'الكمية',
         actions: 'الإجراءات',
         sell: 'بيع',
-        unsell: 'إلغاء البيع',
+        undo: 'تراجع',
         edit: 'تعديل',
         delete: 'حذف',
-        backup: 'النسخ الاحتياطي والاستعادة',
-        export: 'تصدير',
+        backupTitle: 'النسخ الاحتياطي والاستعادة',
+        exportTitle: 'تصدير',
         exportDesc: 'تنزيل نسخة احتياطية JSON',
         exportBtn: 'تصدير إلى JSON',
-        import: 'استيراد',
+        importTitle: 'استيراد',
         importDesc: 'استعادة نسخة احتياطية سابقة',
         importBtn: 'استيراد ملف',
-        formAdd: 'إضافة منتج',
-        formEdit: 'تعديل المنتج',
+        addProductTitle: 'إضافة منتج',
+        editProductTitle: 'تعديل المنتج',
         productName: 'اسم المنتج *',
-        productBrand: 'العلامة التجارية *',
+        brandName: 'العلامة التجارية *',
         productCode: 'رمز المنتج',
-        priceLabel: 'سعر الشراء',
-        salePriceLabel: 'سعر البيع',
-        marginLabel: 'الهامش (محسوب)',
-        quantityLabel: 'كمية المخزون',
+        marginCalculated: 'الهامش (محسوب)',
+        stockQuantity: 'كمية المخزون',
         notes: 'ملاحظات',
-        cancel: 'إلغاء',
         save: 'حفظ',
+        cancel: 'إلغاء',
         noProducts: 'لا توجد منتجات',
-        successSave: 'تم حفظ المنتج بنجاح!',
-        successDelete: 'تم حذف المنتج بنجاح!',
-        successSale: 'تم تسجيل البيع! الهامش: ',
-        successUnsell: 'تم إلغاء البيع! استرداد الهامش: ',
-        successExport: 'تم تصدير البيانات بنجاح!',
-        successImport: 'تم استيراد البيانات بنجاح!',
-        confirmDelete: 'هل أنت متأكد من حذف هذا المنتج؟',
-        confirmImport: 'سيؤدي هذا إلى استبدال جميع المنتجات الحالية. متابعة؟',
-        errorNoStock: 'مخزون غير كافٍ!',
-        errorNoSale: 'لا يوجد بيع حديث للإلغاء!',
-        recentSales: 'المبيعات الأخيرة'
+        saleSuccess: 'تم تسجيل البيع! الهامش: ',
+        undoSuccess: 'تم إلغاء البيع!',
+        saveSuccess: 'تم حفظ المنتج بنجاح!',
+        deleteSuccess: 'تم حذف المنتج بنجاح!',
+        exportSuccess: 'تم تصدير البيانات بنجاح!',
+        importSuccess: 'تم استيراد البيانات بنجاح!',
+        deleteConfirm: 'هل أنت متأكد من حذف هذا المنتج؟',
+        importConfirm: 'سيؤدي هذا إلى استبدال جميع المنتجات الحالية. متابعة؟',
+        stockError: 'مخزون غير كافٍ!',
+        noSaleToUndo: 'لا توجد عملية بيع حديثة للتراجع عنها لهذا المنتج!'
       }
     };
 
@@ -275,67 +265,132 @@ let products = [], sales = [], currentEditId = null, language = localStorage.get
       return translations[language][key] || key;
     }
 
-    function loadProducts() {
-      products = JSON.parse(localStorage.getItem('pharmaProducts') || '[]');
-      sales = JSON.parse(localStorage.getItem('pharmaSales') || '[]');
-      renderAll();
-      updateLanguage();
+    function applyTranslations() {
+      document.querySelectorAll('[data-translate]').forEach(el => {
+        const key = el.getAttribute('data-translate');
+        el.textContent = t(key);
+      });
+      
+      document.querySelectorAll('[data-translate-placeholder]').forEach(el => {
+        const key = el.getAttribute('data-translate-placeholder');
+        el.placeholder = t(key);
+      });
+
+      document.documentElement.setAttribute('dir', language === 'ar' ? 'rtl' : 'ltr');
+      document.documentElement.setAttribute('lang', language);
     }
-    
+
+    function changeLanguage() {
+      language = document.getElementById('langSelect').value;
+      localStorage.setItem('lang', language);
+      applyTranslations();
+      renderAll();
+    }
+
+    function loadProducts() {
+      const saved = localStorage.getItem('pharmaProducts');
+      products = saved ? JSON.parse(saved) : [];
+      const savedSales = localStorage.getItem('pharmaSales');
+      sales = savedSales ? JSON.parse(savedSales) : [];
+      renderAll();
+    }
+
     function saveProducts() {
       localStorage.setItem('pharmaProducts', JSON.stringify(products));
       renderAll();
     }
-    
+
     function saveSales() {
       localStorage.setItem('pharmaSales', JSON.stringify(sales));
     }
-    
+
     function renderDashboard() {
       const total = products.length;
       const value = products.reduce((s, p) => s + (parseFloat(p.salePrice || 0) * parseFloat(p.quantity || 0)), 0);
       const margin = sales.reduce((s, sale) => s + parseFloat(sale.margin || 0), 0);
+      
       document.getElementById('totalProducts').textContent = total;
       document.getElementById('totalValue').textContent = value.toFixed(2) + '€';
-      document.getElementById('totalMargin').textContent = margin.toFixed(2) + '€';${t('sell')}</button>
+      document.getElementById('totalMargin').textContent = margin.toFixed(2) + '€';
+      
+      const recent = products.slice(-5).reverse();
+      document.getElementById('recentProducts').innerHTML = recent.length ? recent.map(p => `
+        <tr><td>${p.name}</td><td>${p.brand}</td><td>${parseFloat(p.salePrice || 0).toFixed(2)}€</td>
+        <td class="${parseFloat(p.margin || 0) < 0 ? 'margin-negative' : ''}">${parseFloat(p.margin || 0).toFixed(2)}€</td>
+        <td>${p.quantity || 0}</td></tr>
+      `).join('') : `<tr><td colspan="5" style="text-align: center; color: #999;">${t('noProducts')}</td></tr>`;
+    }
+
+    function renderProducts() {
+      const search = document.getElementById('searchInput').value.toLowerCase();
+      const filtered = products.filter(p => 
+        p.name.toLowerCase().includes(search) || 
+        p.brand.toLowerCase().includes(search) || 
+        (p.code && p.code.toLowerCase().includes(search))
+      );
+      
+      document.getElementById('productsList').innerHTML = filtered.length ? filtered.map(p => {
+        const lastSale = sales.filter(s => s.productId === p.id).pop();
+        return `
+        <tr><td>${p.name}</td><td>${p.brand}</td><td>${parseFloat(p.purchasePrice || 0).toFixed(2)}€</td>
+        <td>${parseFloat(p.salePrice || 0).toFixed(2)}€</td>
+        <td class="${parseFloat(p.margin || 0) < 0 ? 'margin-negative' : ''}">${parseFloat(p.margin || 0).toFixed(2)}€</td>
+        <td>${p.quantity || 0}</td>
+        <td class="actions">
+          <button class="sale-btn" onclick="sellProduct(${p.id})" ${p.quantity <= 0 ? 'disabled' : ''}>${t('sell')}</button>
+          <button class="undo-btn" onclick="undoSale(${p.id})" ${!lastSale ? 'disabled' : ''}>${t('undo')}</button>
           <button class="btn btn-secondary" onclick="editProduct(${p.id})">${t('edit')}</button>
           <button class="btn btn-danger" onclick="deleteProduct(${p.id})">${t('delete')}</button>
         </td></tr>
-      `).join('') : `<tr><td colspan="7" style="text-align: center; color: #999;">${t('noProducts')}</td></tr>`toFixed(2)}€</td>
-        <td>${p.quantity || 0}</td></tr>
-      `).join('') : '<tr><td colspan="5" style="text-align: center; color: #999;">Aucun produit</td></tr>';
-    }
-    
-    function renderProducts() {
-      const search = document.getElementById('searchInput').value.toLowerCase();
-      const filtered = products.filter(p => p.name.toLowerCaset('errorNoStock'), 'error');
-      product.quantity--;
-      sales.push({ id: Date.now(), productId: id, productName: product.name, margin: parseFloat(product.margin || 0), date: new Date().toISOString() });
-      saveProducts(); saveSales();
-      showAlert(t('successSale') + product.margin + '€', 'success');
+      `}).join('') : `<tr><td colspan="7" style="text-align: center; color: #999;">${t('noProducts')}</td></tr>`;
     }
 
-    function unsellProduct(saleId) {
-      const saleIndex = sales.findIndex(s => s.id === saleId);
-      if (saleIndex === -1) return showAlert(t('errorNoSale'), 'error');
+    function renderAll() { 
+      renderDashboard(); 
+      renderProducts(); 
+      applyTranslations();
+    }
+
+    function sellProduct(id) {
+      const product = products.find(p => p.id === id);
+      if (!product || product.quantity <= 0) return showAlert(t('stockError'), 'error');
       
-      const sale = sales[saleIndex];
-      const product = products.find(p => p.id === sale.productId);
-      if (product) {
-        product.quantity++;
-        sales.splice(saleIndex, 1);
-        saveProducts(); saveSales();
-        showAlert(t('successUnsell') + sale.margin + '€', 'success');
-      }parseFloat(p.margin || 0).toFixed(2)}€</td>
-        <td>${p.quantity || 0}</td>
-        <td class="actions">
-          <button class="sale-btn" onclick="sellProduct(${p.id})" ${p.quantity <= 0 ? 'disabled' : ''}>Vendre</button>
-          <button class="btn btn-secondary" onclick="editProduct(${p.id})">Modifier</button>
-          <button class="btn btn-danger" onclick="deleteProduct(${p.id})">Supprimer</button>
-        </td></tr>
+      product.quantity--;
+      const sale = {
+        id: Date.now(),
+        productId: id,
+        productName: product.name,
+        margin: parseFloat(product.margin || 0),
+        date: new Date().toISOString()
+      };
+      sales.push(sale);
+      
+      saveProducts();
+      saveSales();
+      showAlert(t('saleSuccess') + product.margin + '€', 'success');
+    }
+
+    function undoSale(id) {
+      const product = products.find(p => p.id === id);
+      if (!product) return;
+      
+      const lastSaleIndex = sales.map((s, i) => s.productId === id ? i : -1).filter(i => i !== -1).pop();
+      
+      if (lastSaleIndex === undefined) {
+        return showAlert(t('noSaleToUndo'), 'error');
+      }
+      
+      product.quantity++;
+      sales.splice(lastSaleIndex, 1);
+      
+      saveProducts();
+      saveSales();
+      showAlert(t('undoSuccess'), 'success');
+    }
+
     function openAddForm() {
       currentEditId = null;
-      document.getElementById('formTitle').textContent = t('formAdd');
+      document.getElementById('formTitle').textContent = t('addProductTitle');
       document.getElementById('productForm').reset();
       document.getElementById('formModal').classList.add('active');
     }
@@ -343,24 +398,11 @@ let products = [], sales = [], currentEditId = null, language = localStorage.get
     function editProduct(id) {
       const product = products.find(p => p.id === id);
       if (!product) return;
+      
       currentEditId = id;
-      document.getElementById('formTitle').textContent = t('formEdit');
+      document.getElementById('formTitle').textContent = t('editProductTitle');
       document.getElementById('formName').value = product.name;
-    
-    function openAddForm() {
-      currentEditId = null;
-      document.getElementById('formTitle').textContent = 'Ajouter un Produit';
-      document.getElementById('productForm').reset();
-      document.getElementById('formModal').classList.add('active');
-    }
-    
-    function editProduct(id) {
-      const product = products.find(p => p.id === id);
-      if (!product) return;
-      currentEditIdt('confirmDelete'))) return;
-      products = products.filter(p => p.id !== id);
-      saveProducts();
-      showAlert(t('successDelete')e = product.brand;
+      document.getElementById('formBrand').value = product.brand;
       document.getElementById('formCode').value = product.code || '';
       document.getElementById('formPurchasePrice').value = product.purchasePrice || '';
       document.getElementById('formSalePrice').value = product.salePrice || '';
@@ -369,21 +411,39 @@ let products = [], sales = [], currentEditId = null, language = localStorage.get
       document.getElementById('formNotes').value = product.notes || '';
       document.getElementById('formModal').classList.add('active');
     }
-    
+
     function deleteProduct(id) {
-      if (!confirm('Êtes-vous sûr de vouloir supprimer ce produit?')) return;
+      if (!confirm(t('deleteConfirm'))) return;
       products = products.filter(p => p.id !== id);
       saveProducts();
-      showAlert('Produit supprimé avec succès!', 'success');
+      showAlert(t('deleteSuccess'), 'success');
     }
-    
+
     function saveProduct(event) {
       event.preventDefault();
+      
       const product = {
         id: currentEditId || Date.now(),
         name: document.getElementById('formName').value,
         brand: document.getElementById('formBrand').value,
-      showAlert(t('successSave'), 'success');
+        code: document.getElementById('formCode').value,
+        purchasePrice: parseFloat(document.getElementById('formPurchasePrice').value || 0),
+        salePrice: parseFloat(document.getElementById('formSalePrice').value || 0),
+        margin: parseFloat(document.getElementById('formMargin').value || 0),
+        quantity: parseInt(document.getElementById('formQuantity').value || 0),
+        notes: document.getElementById('formNotes').value
+      };
+      
+      if (currentEditId) {
+        const index = products.findIndex(p => p.id === currentEditId);
+        products[index] = product;
+      } else {
+        products.push(product);
+      }
+      
+      saveProducts();
+      closeForm();
+      showAlert(t('saveSuccess'), 'success');
     }
 
     function calculateMargin() {
@@ -392,45 +452,14 @@ let products = [], sales = [], currentEditId = null, language = localStorage.get
       document.getElementById('formMargin').value = (sale - purchase).toFixed(2);
     }
 
-    function closeForm() { document.getElementById('formModal').classList.remove('active'); }
-    function filterProducts() { renderProducts(); }
-    
-    function changeLanguage() { 
-      language = document.getElementById('langSelect').value; 
-      localStorage.setItem('lang', language);
-      updateLanguage();
-      renderAll();
+    function closeForm() {
+      document.getElementById('formModal').classList.remove('active');
     }
 
-    function updateLanguage() {
-      document.querySelectorAll('[data-lang]').forEach(el => {
-        const key = el.getAttribute('data-lang');
-showAlert(t('successExport'), 'success');
+    function filterProducts() {
+      renderProducts();
     }
 
-    function handleImport() {
-      const file = document.getElementById('importFile').files[0];
-      if (!file) return;
-      if (!confirm(t('confirmImport'))) {
-        document.getElementById('importFile').value = '';
-        return;
-      }
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        try {
-          const data = JSON.parse(e.target.result);
-          products = data.products || [];
-          sales = data.sales || [];
-          saveProducts(); saveSales();
-          showAlert(t('successImport'), 'success');
-          document.getElementById('importFile').value = '';
-        } catch (error) {
-          showAlert('Error: ' + error.message, 'error');
-    
-    function closeForm() { document.getElementById('formModal').classList.remove('active'); }
-    function filterProducts() { renderProducts(); }
-    function changeLanguage() { language = document.getElementById('langSelect').value; localStorage.setItem('lang', language); }
-    
     function exportData() {
       const data = { version: 1, exportDate: new Date().toISOString(), products, sales };
       const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
@@ -440,48 +469,52 @@ showAlert(t('successExport'), 'success');
       a.download = `pharma-db-${new Date().toISOString().split('T')[0]}.json`;
       a.click();
       URL.revokeObjectURL(url);
-      showAlert('Données exportées avec succès!', 'success');
+      showAlert(t('exportSuccess'), 'success');
     }
-    
+
     function handleImport() {
       const file = document.getElementById('importFile').files[0];
       if (!file) return;
-      if (!confirm('Ceci remplacera tous les produits actuels. Continuer?')) {
+      
+      if (!confirm(t('importConfirm'))) {
         document.getElementById('importFile').value = '';
         return;
       }
+      
       const reader = new FileReader();
       reader.onload = (e) => {
         try {
           const data = JSON.parse(e.target.result);
           products = data.products || [];
           sales = data.sales || [];
-          saveProducts(); saveSales();
-          showAlert('Données importées avec succès!', 'success');
+          saveProducts();
+          saveSales();
+          showAlert(t('importSuccess'), 'success');
           document.getElementById('importFile').value = '';
         } catch (error) {
-          showAlert('Erreur: ' + error.message, 'error');
+          showAlert('Error: ' + error.message, 'error');
         }
       };
       reader.readAsText(file);
     }
-    
+
     function showAlert(message, type) {
       const alert = document.getElementById('alert');
       alert.textContent = message;
       alert.className = `alert show alert-${type}`;
       setTimeout(() => alert.classList.remove('show'), 3000);
     }
-    
-    function showPage(page, button) {
+
+    function changePage(page, button) {
       document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
       document.getElementById(page).classList.add('active');
       document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
       button.classList.add('active');
     }
-    
+
     document.getElementById('langSelect').value = language;
     loadProducts();
+    applyTranslations();
   </script>
 </body>
 </html>
