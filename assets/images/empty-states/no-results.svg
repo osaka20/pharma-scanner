@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300" width="300" height="300">
+  <circle cx="150" cy="150" r="120" fill="#f8f9fa" stroke="#e9ecef" stroke-width="2"/>
+  <g transform="translate(150, 150)">
+    <circle cx="0" cy="-20" r="40" fill="none" stroke="#667eea" stroke-width="4" opacity="0.3"/>
+    <line x1="25" y1="15" x2="45" y2="35" stroke="#667eea" stroke-width="4" stroke-linecap="round" opacity="0.3"/>
+    <text x="0" y="80" font-size="16" fill="#868e96" text-anchor="middle">No results found</text>
+  </g>
+</svg>

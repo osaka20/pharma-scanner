@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300" width="300" height="300">
+  <circle cx="150" cy="150" r="120" fill="#fff5f5" stroke="#ffe3e3" stroke-width="2"/>
+  <g transform="translate(150, 150)">
+    <circle cx="0" cy="0" r="50" fill="none" stroke="#ff6b6b" stroke-width="4" opacity="0.3"/>
+    <line x1="-20" y1="-20" x2="20" y2="20" stroke="#ff6b6b" stroke-width="4" stroke-linecap="round" opacity="0.5"/>
+    <line x1="20" y1="-20" x2="-20" y2="20" stroke="#ff6b6b" stroke-width="4" stroke-linecap="round" opacity="0.5"/>
+    <text x="0" y="80" font-size="16" fill="#868e96" text-anchor="middle">Something went wrong</text>
+  </g>
+</svg>
