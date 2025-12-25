@@ -288,10 +288,20 @@
     }
 
     function loadProducts() {
-      const saved = localStorage.getItem('pharmaProducts');
-      products = saved ? JSON.parse(saved) : [];
-      const savedSales = localStorage.getItem('pharmaSales');
-      sales = savedSales ? JSON.parse(savedSales) : [];
+      try {
+        const saved = localStorage.getItem('pharmaProducts');
+        products = saved ? JSON.parse(saved) : [];
+      } catch (e) {
+        products = [];
+        localStorage.removeItem('pharmaProducts');
+      }
+      try {
+        const savedSales = localStorage.getItem('pharmaSales');
+        sales = savedSales ? JSON.parse(savedSales) : [];
+      } catch (e) {
+        sales = [];
+        localStorage.removeItem('pharmaSales');
+      }
       renderAll();
     }
 
@@ -322,12 +332,14 @@
     }
 
     function renderProducts() {
-      const search = document.getElementById('searchInput').value.toLowerCase();
-      const filtered = products.filter(p => 
-        p.name.toLowerCase().includes(search) || 
-        p.brand.toLowerCase().includes(search) || 
-        (p.code && p.code.toLowerCase().includes(search))
-      );
+      const searchEl = document.getElementById('searchInput');
+      const search = (searchEl && searchEl.value ? searchEl.value : '').toString().toLowerCase();
+      const filtered = products.filter(p => {
+        const name = (p && p.name ? p.name : '').toString().toLowerCase();
+        const brand = (p && p.brand ? p.brand : '').toString().toLowerCase();
+        const code = (p && p.code ? p.code : '').toString().toLowerCase();
+        return name.includes(search) || brand.includes(search) || code.includes(search);
+      });
       
       document.getElementById('productsList').innerHTML = filtered.length ? filtered.map(p => {
         const lastSale = sales.filter(s => s.productId === p.id).pop();
@@ -421,15 +433,26 @@
 
     function saveProduct(event) {
       event.preventDefault();
-      
+      const name = document.getElementById('formName').value.trim();
+      const brand = document.getElementById('formBrand').value.trim();
+      if (!name || !brand) {
+        const msg = language === 'ar' ? 'يرجى إدخال الاسم والعلامة التجارية' : 'Please enter name and brand';
+        return showAlert(msg, 'error');
+      }
+
+      const purchase = parseFloat(document.getElementById('formPurchasePrice').value || 0);
+      const sale = parseFloat(document.getElementById('formSalePrice').value || 0);
+      const marginInput = document.getElementById('formMargin').value;
+      const computedMargin = marginInput === '' ? (sale - purchase).toFixed(2) : marginInput;
+
       const product = {
         id: currentEditId || Date.now(),
-        name: document.getElementById('formName').value,
-        brand: document.getElementById('formBrand').value,
+        name,
+        brand,
         code: document.getElementById('formCode').value,
-        purchasePrice: parseFloat(document.getElementById('formPurchasePrice').value || 0),
-        salePrice: parseFloat(document.getElementById('formSalePrice').value || 0),
-        margin: parseFloat(document.getElementById('formMargin').value || 0),
+        purchasePrice: purchase,
+        salePrice: sale,
+        margin: parseFloat(computedMargin || 0),
         quantity: parseInt(document.getElementById('formQuantity').value || 0),
         notes: document.getElementById('formNotes').value
       };
@@ -512,9 +535,11 @@
       button.classList.add('active');
     }
 
-    document.getElementById('langSelect').value = language;
-    loadProducts();
-    applyTranslations();
+    window.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('langSelect').value = language;
+      applyTranslations();
+      loadProducts();
+    });
   </script>
 </body>
 </html>
