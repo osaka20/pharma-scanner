@@ -91,7 +91,11 @@
         <div class="stats-grid">
           <div class="stat-card"><div class="stat-label" data-translate="totalProducts">Total Products</div><div class="stat-value" id="totalProducts">0</div></div>
           <div class="stat-card"><div class="stat-label" data-translate="stockValue">Stock Value</div><div class="stat-value" id="totalValue">0€</div></div>
-          <div class="stat-card"><div class="stat-label" data-translate="marginRealized">Margin Realized</div><div class="stat-value" id="totalMargin">0€</div></div>
+          <div class="stat-card" style="display:flex; flex-direction:column; gap:0.5rem; align-items:center;">
+            <div class="stat-label" data-translate="marginRealized">Margin Realized</div>
+            <div class="stat-value" id="totalMargin">0€</div>
+            <button class="btn btn-warning" style="padding:0.4rem 0.75rem; font-size:12px;" onclick="resetMargin()" data-translate="resetMargin">Reset Margin</button>
+          </div>
         </div>
         <h3 data-translate="recentProducts">Recently Added Products</h3>
         <div class="table-container">
@@ -113,7 +117,14 @@
       <div id="history" class="page">
         <div style="display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap;">
           <h2 data-translate="historyTitle">Sales History</h2>
-          <button class="btn btn-warning" onclick="resetMargin()" data-translate="resetMargin">Reset Margin</button>
+          <div style="display:flex; gap:0.5rem; flex-wrap:wrap; align-items:center;">
+            <input type="date" id="historyStart" style="padding:0.4rem; border:1px solid #ddd; border-radius:4px;">
+            <input type="date" id="historyEnd" style="padding:0.4rem; border:1px solid #ddd; border-radius:4px;">
+            <input type="text" id="historySearch" data-translate-placeholder="searchHistory" placeholder="Filter..." style="padding:0.4rem; border:1px solid #ddd; border-radius:4px;">
+            <button class="btn btn-primary" onclick="applyHistoryFilters()" data-translate="applyFilters">Filter</button>
+            <button class="btn btn-secondary" onclick="clearHistoryFilters()" data-translate="clearFilters">Clear</button>
+            <button class="btn btn-success" onclick="exportHistoryPDF()" data-translate="exportPdf">Export PDF</button>
+          </div>
         </div>
         <div class="table-container" style="margin-top: 1rem;">
           <table>
@@ -123,9 +134,10 @@
                 <th data-translate="saleProduct">Product</th>
                 <th data-translate="saleMargin">Margin</th>
                 <th data-translate="saleQuantity">Quantity</th>
+                <th data-translate="saleType">Type</th>
               </tr>
             </thead>
-            <tbody id="historyList"><tr><td colspan="4" style="text-align: center; color: #999;" data-translate="noSales">No sales yet</td></tr></tbody>
+            <tbody id="historyList"><tr><td colspan="5" style="text-align: center; color: #999;" data-translate="noSales">No sales yet</td></tr></tbody>
           </table>
         </div>
       </div>
@@ -185,6 +197,9 @@
         stockValue: 'Stock Value',
         marginRealized: 'Margin Realized',
         history: 'History',
+        saleType: 'Type',
+        sale: 'Sale',
+        undoType: 'Undo',
         recentProducts: 'Recently Added Products',
         productsTitle: 'Product Catalog',
         addProduct: 'Add Product',
@@ -210,9 +225,13 @@
         exportTitle: 'Export',
         exportDesc: 'Download JSON backup',
         exportBtn: 'Export to JSON',
+        exportPdf: 'Export PDF',
         importTitle: 'Import',
         importDesc: 'Restore previous backup',
         importBtn: 'Import File',
+        applyFilters: 'Filter',
+        clearFilters: 'Clear',
+        searchHistory: 'Filter by product or type...',
         addProductTitle: 'Add Product',
         editProductTitle: 'Edit Product',
         productName: 'Product Name *',
@@ -248,6 +267,9 @@
         stockValue: 'قيمة المخزون',
         marginRealized: 'الهامش المحقق',
         history: 'السجل',
+        saleType: 'النوع',
+        sale: 'بيع',
+        undoType: 'تراجع',
         recentProducts: 'المنتجات المضافة مؤخراً',
         productsTitle: 'كتالوج المنتجات',
         addProduct: 'إضافة منتج',
@@ -273,9 +295,13 @@
         exportTitle: 'تصدير',
         exportDesc: 'تنزيل نسخة احتياطية JSON',
         exportBtn: 'تصدير إلى JSON',
+        exportPdf: 'تصدير PDF',
         importTitle: 'استيراد',
         importDesc: 'استعادة نسخة احتياطية سابقة',
         importBtn: 'استيراد ملف',
+        applyFilters: 'تطبيق الفلاتر',
+        clearFilters: 'إزالة الفلاتر',
+        searchHistory: 'تصفية حسب المنتج أو النوع...',
         addProductTitle: 'إضافة منتج',
         editProductTitle: 'تعديل المنتج',
         productName: 'اسم المنتج *',
@@ -380,13 +406,50 @@
       `).join('') : `<tr><td colspan="5" style="text-align: center; color: #999;">${t('noProducts')}</td></tr>`;
     }
 
+    function getFilteredSales() {
+      const startEl = document.getElementById('historyStart');
+      const endEl = document.getElementById('historyEnd');
+      const searchEl = document.getElementById('historySearch');
+      const start = startEl && startEl.value ? new Date(startEl.value) : null;
+      const end = endEl && endEl.value ? new Date(endEl.value) : null;
+      const term = (searchEl && searchEl.value ? searchEl.value : '').toString().toLowerCase();
+
+      return sales.filter(sale => {
+        const d = new Date(sale.date);
+        if (start && d < new Date(start.getTime())) return false;
+        if (end) {
+          const endDay = new Date(end);
+          endDay.setHours(23,59,59,999);
+          if (d > endDay) return false;
+        }
+        const name = (sale.productName || '').toString().toLowerCase();
+        const type = (sale.type || 'sale').toString().toLowerCase();
+        return name.includes(term) || type.includes(term);
+      }).sort((a, b) => new Date(b.date) - new Date(a.date));
+    }
+
     function renderHistory() {
-      const list = sales.slice().sort((a, b) => new Date(b.date) - new Date(a.date));
+      const list = getFilteredSales();
       document.getElementById('historyList').innerHTML = list.length ? list.map(sale => {
         const date = new Date(sale.date);
         const formatted = `${date.toLocaleDateString()} ${date.toLocaleTimeString()}`;
-        return `<tr><td>${formatted}</td><td>${sale.productName}</td><td>${parseFloat(sale.margin || 0).toFixed(2)}€</td><td>-1</td></tr>`;
-      }).join('') : `<tr><td colspan="4" style="text-align: center; color: #999;">${t('noSales')}</td></tr>`;
+        const marginVal = parseFloat(sale.margin || 0);
+        const typeLabel = sale.type === 'undo' ? t('undoType') : t('sale');
+        const qty = sale.type === 'undo' ? '+1' : '-1';
+        const marginClass = marginVal < 0 ? 'margin-negative' : '';
+        return `<tr><td>${formatted}</td><td>${sale.productName}</td><td class="${marginClass}">${marginVal.toFixed(2)}€</td><td>${qty}</td><td>${typeLabel}</td></tr>`;
+      }).join('') : `<tr><td colspan="5" style="text-align: center; color: #999;">${t('noSales')}</td></tr>`;
+    }
+
+    function applyHistoryFilters() { renderHistory(); }
+    function clearHistoryFilters() {
+      const startEl = document.getElementById('historyStart');
+      const endEl = document.getElementById('historyEnd');
+      const searchEl = document.getElementById('historySearch');
+      if (startEl) startEl.value = '';
+      if (endEl) endEl.value = '';
+      if (searchEl) searchEl.value = '';
+      renderHistory();
     }
 
     function renderProducts() {
@@ -432,7 +495,8 @@
         productId: id,
         productName: product.name,
         margin: parseFloat(product.margin || 0),
-        date: new Date().toISOString()
+        date: new Date().toISOString(),
+        type: 'sale'
       };
       sales.push(sale);
       
@@ -445,14 +509,22 @@
       const product = products.find(p => p.id === id);
       if (!product) return;
       
-      const lastSaleIndex = sales.map((s, i) => s.productId === id ? i : -1).filter(i => i !== -1).pop();
-      
+      const lastSaleIndex = sales.map((s, i) => s.productId === id && s.type === 'sale' ? i : -1).filter(i => i !== -1).pop();
       if (lastSaleIndex === undefined) {
         return showAlert(t('noSaleToUndo'), 'error');
       }
       
+      const lastSale = sales[lastSaleIndex];
       product.quantity++;
-      sales.splice(lastSaleIndex, 1);
+      // Keep original sale in history; add undo entry with negative margin so totals reflect reversal.
+      sales.push({
+        id: Date.now(),
+        productId: id,
+        productName: product.name,
+        margin: -Math.abs(parseFloat(lastSale.margin || 0)),
+        date: new Date().toISOString(),
+        type: 'undo'
+      });
       
       saveProducts();
       saveSales();
@@ -466,6 +538,47 @@
       localStorage.setItem('pharmaMarginOffset', marginOffset);
       renderAll();
       showAlert(t('resetSuccess'), 'success');
+    }
+
+    function exportHistoryPDF() {
+      const list = getFilteredSales();
+      const totalRawMargin = list.reduce((s, sale) => s + parseFloat(sale.margin || 0), 0);
+      const startEl = document.getElementById('historyStart');
+      const endEl = document.getElementById('historyEnd');
+      const rangeText = `${startEl && startEl.value ? startEl.value : '...'} → ${endEl && endEl.value ? endEl.value : '...'}`;
+
+      const rows = list.map(sale => {
+        const d = new Date(sale.date);
+        const formatted = `${d.toLocaleDateString()} ${d.toLocaleTimeString()}`;
+        const marginVal = parseFloat(sale.margin || 0);
+        const typeLabel = sale.type === 'undo' ? t('undoType') : t('sale');
+        const qty = sale.type === 'undo' ? '+1' : '-1';
+        const marginTxt = `${marginVal.toFixed(2)}€`;
+        return `<tr><td>${formatted}</td><td>${sale.productName}</td><td>${qty}</td><td>${typeLabel}</td><td>${marginTxt}</td></tr>`;
+      }).join('');
+
+      const win = window.open('', '_blank');
+      win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>History PDF</title>
+        <style>
+          body { font-family: Arial, sans-serif; padding: 20px; }
+          h2 { margin-bottom: 0.2rem; }
+          p { margin: 0.1rem 0 1rem 0; }
+          table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+          th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+          th { background: #f5f5f5; }
+        </style>
+      </head><body>
+        <h2>${t('historyTitle')}</h2>
+        <p>${t('saleDate')}: ${rangeText}</p>
+        <p>${t('saleMargin')}: ${totalRawMargin.toFixed(2)}€</p>
+        <table>
+          <thead><tr><th>${t('saleDate')}</th><th>${t('saleProduct')}</th><th>${t('saleQuantity')}</th><th>${t('saleType')}</th><th>${t('saleMargin')}</th></tr></thead>
+          <tbody>${rows || `<tr><td colspan="5">${t('noSales')}</td></tr>`}</tbody>
+        </table>
+      </body></html>`);
+      win.document.close();
+      win.focus();
+      win.print();
     }
 
     function openAddForm() {
