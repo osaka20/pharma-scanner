@@ -1,0 +1,310 @@
+<!-- HTML simple pour tester les traductions -->
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pharma Scanner - Démarrage Rapide</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      background: #f5f5f5;
+    }
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 2rem;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+    h1 {
+      color: #667eea;
+      margin-bottom: 1rem;
+    }
+    h2 {
+      color: #333;
+      margin-top: 2rem;
+      margin-bottom: 1rem;
+      border-left: 4px solid #667eea;
+      padding-left: 1rem;
+    }
+    .icon {
+      font-size: 2rem;
+      margin-right: 0.5rem;
+    }
+    code {
+      background: #f0f0f0;
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      font-family: 'Courier New', monospace;
+    }
+    .code-block {
+      background: #282c34;
+      color: #abb2bf;
+      padding: 1rem;
+      border-radius: 4px;
+      overflow-x: auto;
+      margin: 1rem 0;
+    }
+    .code-block code {
+      background: none;
+      padding: 0;
+      color: #abb2bf;
+    }
+    ul {
+      margin-left: 2rem;
+      margin-bottom: 1rem;
+    }
+    li {
+      margin-bottom: 0.5rem;
+    }
+    .step {
+      background: #e3f2fd;
+      border-left: 4px solid #2196f3;
+      padding: 1rem;
+      margin: 1rem 0;
+      border-radius: 4px;
+    }
+    .success {
+      background: #e8f5e9;
+      border-left-color: #4caf50;
+    }
+    .warning {
+      background: #fff3e0;
+      border-left-color: #ff9800;
+    }
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1.5rem;
+      margin: 1.5rem 0;
+    }
+    .feature-card {
+      background: #f9f9f9;
+      padding: 1.5rem;
+      border-radius: 8px;
+      border: 1px solid #eee;
+    }
+    .feature-card h3 {
+      color: #667eea;
+      margin-bottom: 0.5rem;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1rem 0;
+    }
+    th, td {
+      padding: 0.75rem;
+      text-align: left;
+      border-bottom: 1px solid #ddd;
+    }
+    th {
+      background: #f5f5f5;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1><span class="icon">💊</span>Pharma Scanner - Guide de Démarrage</h1>
+    
+    <div class="step success">
+      <strong>✅ Bienvenue!</strong> Vous avez une application complète de gestion de pharmacie offline.
+    </div>
+
+    <h2><span class="icon">🚀</span>Installation Rapide</h2>
+    <ol>
+      <li>Ouvrir un terminal dans le dossier du projet</li>
+      <li>Lancer: <code>npm install</code></li>
+      <li>Puis: <code>npm run dev</code></li>
+      <li>Ouvrir: <code>http://localhost:5173</code></li>
+    </ol>
+
+    <h2><span class="icon">📦</span>Fonctionnalités Principales</h2>
+    <div class="feature-grid">
+      <div class="feature-card">
+        <h3>📊 Tableau de Bord</h3>
+        <p>Vue d'ensemble rapide: nombre de produits, valeur stock, marge totale</p>
+      </div>
+      <div class="feature-card">
+        <h3>🔍 Catalogue Avancé</h3>
+        <p>Recherche, filtrage par marque, tri par prix/marge, pagination</p>
+      </div>
+      <div class="feature-card">
+        <h3>📄 Fiche Produit</h3>
+        <p>Détails complets avec calcul automatique de marge</p>
+      </div>
+      <div class="feature-card">
+        <h3>💾 Import/Export</h3>
+        <p>Sauvegarde JSON pour migration ou backup</p>
+      </div>
+      <div class="feature-card">
+        <h3>🌍 Multilingue</h3>
+        <p>Français & Anglais - Changez la langue facilement</p>
+      </div>
+      <div class="feature-card">
+        <h3>📱 Responsive</h3>
+        <p>Fonctionne sur desktop, tablette, petit écran</p>
+      </div>
+    </div>
+
+    <h2><span class="icon">🎯</span>Cas d'Usage Rapide</h2>
+    
+    <div class="step">
+      <strong>Ajouter un produit:</strong>
+      <ol>
+        <li>Cliquez <code>+ Ajouter un Produit</code></li>
+        <li>Remplissez Nom et Marque (obligatoires)</li>
+        <li>Entrez Prix d'achat et Prix de vente</li>
+        <li>La <strong>marge se calcule automatiquement</strong> ✨</li>
+        <li>Cliquez <code>Enregistrer</code></li>
+      </ol>
+    </div>
+
+    <div class="step">
+      <strong>Chercher un produit:</strong>
+      <ul>
+        <li>Utilisez la barre de recherche (nom/marque/code)</li>
+        <li>Filtrez par marque</li>
+        <li>Triez par prix, marge, quantité...</li>
+      </ul>
+    </div>
+
+    <div class="step success">
+      <strong>Sauvegarder vos données:</strong>
+      <ul>
+        <li>Allez dans <code>Import/Export</code></li>
+        <li>Cliquez <code>Exporter en JSON</code></li>
+        <li>Un fichier <code>pharma-db-YYYY-MM-DD.json</code> est téléchargé</li>
+        <li>Gardez ce fichier en sécurité! 🔒</li>
+      </ul>
+    </div>
+
+    <div class="step warning">
+      <strong>Restaurer vos données:</strong>
+      <ul>
+        <li>Allez dans <code>Import/Export</code></li>
+        <li>Choisissez un fichier JSON</li>
+        <li>Confirmez l'import (remplace tous les produits actuels)</li>
+      </ul>
+    </div>
+
+    <h2><span class="icon">💰</span>Champs & Calculs</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Champ</th>
+          <th>Type</th>
+          <th>Obligatoire?</th>
+          <th>Notes</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Nom</td>
+          <td>Texte</td>
+          <td>✅ Oui</td>
+          <td>Nom du produit</td>
+        </tr>
+        <tr>
+          <td>Marque</td>
+          <td>Texte</td>
+          <td>✅ Oui</td>
+          <td>Label/fournisseur</td>
+        </tr>
+        <tr>
+          <td>Prix d'achat</td>
+          <td>Nombre</td>
+          <td>❌ Non</td>
+          <td>Coût d'approvisionnement</td>
+        </tr>
+        <tr>
+          <td>Prix de vente</td>
+          <td>Nombre</td>
+          <td>❌ Non</td>
+          <td>Montant de vente</td>
+        </tr>
+        <tr>
+          <td><strong>Marge</strong></td>
+          <td>Nombre</td>
+          <td>🤖 Auto</td>
+          <td><strong>Vente - Achat</strong> (calculée)</td>
+        </tr>
+        <tr>
+          <td>Quantité</td>
+          <td>Nombre</td>
+          <td>❌ Non</td>
+          <td>Unités en stock</td>
+        </tr>
+        <tr>
+          <td>Notes</td>
+          <td>Texte libre</td>
+          <td>❌ Non</td>
+          <td>Infos supplémentaires</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2><span class="icon">🔐</span>Sécurité & Données</h2>
+    <ul>
+      <li><strong>✅ Offline par défaut:</strong> Aucune connexion internet requise</li>
+      <li><strong>✅ Stockage local:</strong> IndexedDB (navigateur)</li>
+      <li><strong>✅ Privé:</strong> Zéro données sur serveur</li>
+      <li><strong>✅ Sauvegarde manuelle:</strong> JSON pour migration</li>
+    </ul>
+
+    <h2><span class="icon">🛠️</span>Commandes Utiles</h2>
+    <div class="code-block">
+      <code>npm run dev         # Développement (http://localhost:5173)
+npm run build        # Production build
+npm run preview      # Prévisualiser la build
+npm run lint         # Vérifier le code</code>
+    </div>
+
+    <h2><span class="icon">📚</span>Ressources</h2>
+    <ul>
+      <li>📖 <strong>README.md</strong> - Documentation complète</li>
+      <li>🗂️ <strong>Structure du projet</strong> - Voir dossiers src/</li>
+      <li>💬 <strong>Traductions</strong> - src/i18n/locales/</li>
+      <li>🎨 <strong>Styles</strong> - src/style.scss</li>
+    </ul>
+
+    <h2><span class="icon">🚨</span>Troubleshooting</h2>
+    <div class="step warning">
+      <strong>L'app ne démarre pas?</strong>
+      <ul>
+        <li>Vérifiez Node.js: <code>node --version</code> (besoin 16+)</li>
+        <li>Supprimez node_modules: <code>rm -rf node_modules</code></li>
+        <li>Réinstallez: <code>npm install</code></li>
+      </ul>
+    </div>
+
+    <div class="step warning">
+      <strong>Les données ont disparu?</strong>
+      <ul>
+        <li>Vérifiez si vous aviez une sauvegarde (.json)</li>
+        <li>Utilisez Import/Export pour restaurer</li>
+        <li>Si pas de backup: malheureusement perdu (sauvegardez régulièrement!)</li>
+      </ul>
+    </div>
+
+    <h2><span class="icon">📞</span>Besoin d'aide?</h2>
+    <p>Consultez <strong>README.md</strong> pour la documentation complète ou explorez le code source qui est bien structuré et commenté. 😊</p>
+
+    <hr style="margin: 2rem 0; border: 1px solid #eee;">
+    <p style="text-align: center; color: #999;">
+      <strong>Pharma Scanner v1.0.0</strong> - Gestion de pharmacie offline & multilingue 💊<br>
+      Créé avec Vue 3 + Vite + IndexedDB
+    </p>
+  </div>
+</body>
+</html>

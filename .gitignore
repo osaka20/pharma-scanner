@@ -1,0 +1,71 @@
+# ═══════════════════════════════════════════
+# Pharma Scanner - .gitignore
+# ═══════════════════════════════════════════
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Production builds
+dist/
+dist-ssr/
+*.local
+
+# Environment variables (local config)
+.env
+.env.local
+.env.*.local
+
+# IDE specific files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Build tools
+.cache/
+.vite/
+vite.config.js.timestamp-*
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+
+# Editor backups
+*.bak
+*.tmp
+*.temp
+
+# Testing
+coverage/
+.nyc_output/
+
+# Tauri (desktop app)
+src-tauri/target
+.tauri/
+
+# Package manager lockfiles (optional, depends on workflow)
+# package-lock.json
+# yarn.lock
+
+# Misc
+.directory
+.eslintcache
+.stylelintcache
