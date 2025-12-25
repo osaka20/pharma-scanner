@@ -329,6 +329,69 @@
       }
     };
 
+    // IndexedDB storage wrapper (scalable storage with fallback)
+    const DB = {
+      db: null,
+      init() {
+        return new Promise((resolve, reject) => {
+          const req = indexedDB.open('pharmaScanner', 1);
+          req.onupgradeneeded = (e) => {
+            const db = e.target.result;
+            if (!db.objectStoreNames.contains('kv')) {
+              db.createObjectStore('kv', { keyPath: 'key' });
+            }
+          };
+          req.onsuccess = () => { DB.db = req.result; resolve(); };
+          req.onerror = () => { reject(req.error); };
+        });
+      },
+      get(key) {
+        return new Promise((resolve) => {
+          if (!DB.db) return resolve(null);
+          const tx = DB.db.transaction(['kv'], 'readonly');
+          const store = tx.objectStore('kv');
+          const req = store.get(key);
+          req.onsuccess = () => resolve(req.result ? req.result.value : null);
+          req.onerror = () => resolve(null);
+        });
+      },
+      set(key, value) {
+        return new Promise((resolve, reject) => {
+          if (!DB.db) return reject(new Error('db not ready'));
+          const tx = DB.db.transaction(['kv'], 'readwrite');
+          const store = tx.objectStore('kv');
+          const req = store.put({ key, value });
+          req.onsuccess = () => resolve();
+          req.onerror = () => reject(req.error);
+        });
+      }
+    };
+
+    async function migrateFromLocalStorageIfNeeded() {
+      try {
+        const hasProducts = await DB.get('products');
+        const lsProductsStr = localStorage.getItem('pharmaProducts');
+        if (!hasProducts && lsProductsStr) {
+          const lsProducts = JSON.parse(lsProductsStr);
+          await DB.set('products', lsProducts);
+          localStorage.removeItem('pharmaProducts');
+        }
+        const hasSales = await DB.get('sales');
+        const lsSalesStr = localStorage.getItem('pharmaSales');
+        if (!hasSales && lsSalesStr) {
+          const lsSales = JSON.parse(lsSalesStr);
+          await DB.set('sales', lsSales);
+          localStorage.removeItem('pharmaSales');
+        }
+        const hasOffset = await DB.get('marginOffset');
+        const lsOffsetStr = localStorage.getItem('pharmaMarginOffset');
+        if (hasOffset == null && lsOffsetStr != null) {
+          await DB.set('marginOffset', parseFloat(lsOffsetStr) || 0);
+          localStorage.removeItem('pharmaMarginOffset');
+        }
+      } catch (e) { /* ignore */ }
+    }
+
     function t(key) {
       return translations[language][key] || key;
     }
@@ -355,37 +418,36 @@
       renderAll();
     }
 
-    function loadProducts() {
+    async function loadProducts() {
       try {
-        const saved = localStorage.getItem('pharmaProducts');
-        products = saved ? JSON.parse(saved) : [];
+        const p = await DB.get('products');
+        products = Array.isArray(p) ? p : [];
       } catch (e) {
         products = [];
-        localStorage.removeItem('pharmaProducts');
       }
       try {
-        const savedSales = localStorage.getItem('pharmaSales');
-        sales = savedSales ? JSON.parse(savedSales) : [];
+        const s = await DB.get('sales');
+        sales = Array.isArray(s) ? s : [];
       } catch (e) {
         sales = [];
-        localStorage.removeItem('pharmaSales');
       }
       try {
-        marginOffset = parseFloat(localStorage.getItem('pharmaMarginOffset') || 0) || 0;
+        const m = await DB.get('marginOffset');
+        marginOffset = parseFloat(m || 0) || 0;
       } catch (e) {
         marginOffset = 0;
-        localStorage.removeItem('pharmaMarginOffset');
       }
       renderAll();
     }
 
     function saveProducts() {
-      localStorage.setItem('pharmaProducts', JSON.stringify(products));
-      renderAll();
+      DB.set('products', products)
+        .then(() => renderAll())
+        .catch(() => { try { localStorage.setItem('pharmaProducts', JSON.stringify(products)); } catch (e) {} renderAll(); });
     }
 
     function saveSales() {
-      localStorage.setItem('pharmaSales', JSON.stringify(sales));
+      DB.set('sales', sales).catch(() => { try { localStorage.setItem('pharmaSales', JSON.stringify(sales)); } catch (e) {} });
     }
 
     function renderDashboard() {
@@ -535,7 +597,7 @@
       if (!confirm(t('resetConfirm'))) return;
       const totalMargin = sales.reduce((s, sale) => s + parseFloat(sale.margin || 0), 0);
       marginOffset = totalMargin;
-      localStorage.setItem('pharmaMarginOffset', marginOffset);
+      DB.set('marginOffset', marginOffset).catch(() => { try { localStorage.setItem('pharmaMarginOffset', marginOffset); } catch (e) {} });
       renderAll();
       showAlert(t('resetSuccess'), 'success');
     }
@@ -717,9 +779,13 @@
     }
 
     window.addEventListener('DOMContentLoaded', () => {
-      document.getElementById('langSelect').value = language;
-      applyTranslations();
-      loadProducts();
+      (async () => {
+        try { await DB.init(); } catch (e) {}
+        await migrateFromLocalStorageIfNeeded();
+        document.getElementById('langSelect').value = language;
+        applyTranslations();
+        await loadProducts();
+      })();
     });
   </script>
 </body>
