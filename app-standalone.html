@@ -341,9 +341,9 @@
     <div class="navbar">
       <h1>Pharma Scanner</h1>
       <div class="navbar-menu">
-        <button class="nav-btn active" data-i18n="nav.dashboard" onclick="showPage('dashboard')">Tableau de Bord</button>
-        <button class="nav-btn" data-i18n="nav.products" onclick="showPage('products')">Produits</button>
-        <button class="nav-btn" data-i18n="nav.export" onclick="showPage('export')">Sauvegarde</button>
+        <button class="nav-btn active" data-i18n="nav.dashboard" onclick="showPage('dashboard', this)">Tableau de Bord</button>
+        <button class="nav-btn" data-i18n="nav.products" onclick="showPage('products', this)">Produits</button>
+        <button class="nav-btn" data-i18n="nav.export" onclick="showPage('export', this)">Sauvegarde</button>
       </div>
       <select class="language-select" id="langSelect" onchange="changeLanguage()">
         <option value="fr">Français</option>
@@ -867,11 +867,11 @@ Render All
     }
 
     // Show Page
-    function showPage(page) {
+    function showPage(page, button) {
       document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
       document.getElementById(page).classList.add('active');
       document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-      event.target.classList.add('active');
+      button.classList.add('active');
     }
 
     // Init
