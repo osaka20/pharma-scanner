@@ -41,6 +41,25 @@
       margin: 0;
     }
 
+    .sale-btn {
+      padding: 0.5rem 1rem;
+      background: #66bb6a;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 12px;
+    }
+
+    .sale-btn:hover {
+      background: #57a35b;
+    }
+
+    .sale-btn:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+
     .navbar-menu {
       display: flex;
       gap: 2rem;
@@ -320,15 +339,15 @@
   <div class="container">
     <!-- Navbar -->
     <div class="navbar">
-      <h1>💊 Pharma Scanner</h1>
+      <h1>Pharma Scanner</h1>
       <div class="navbar-menu">
-        <button class="nav-btn active" onclick="showPage('dashboard')">Tableau de Bord</button>
-        <button class="nav-btn" onclick="showPage('products')">Produits</button>
-        <button class="nav-btn" onclick="showPage('export')">Sauvegarde</button>
+        <button class="nav-btn active" data-i18n="nav.dashboard" onclick="showPage('dashboard')">Tableau de Bord</button>
+        <button class="nav-btn" data-i18n="nav.products" onclick="showPage('products')">Produits</button>
+        <button class="nav-btn" data-i18n="nav.export" onclick="showPage('export')">Sauvegarde</button>
       </div>
       <select class="language-select" id="langSelect" onchange="changeLanguage()">
-        <option value="fr">🇫🇷 Français</option>
-        <option value="en">🇬🇧 English</option>
+        <option value="fr">Français</option>
+        <option value="en">English</option>
       </select>
     </div>
 
@@ -338,39 +357,36 @@
 
       <!-- Dashboard -->
       <div id="dashboard" class="page active">
-        <h2>Tableau de Bord</h2>
+        <h2 data-i18n="dashboard.title">Tableau de Bord</h2>
         <div class="stats-grid">
           <div class="stat-card">
-            <div class="stat-icon">📦</div>
-            <div class="stat-label">Total Produits</div>
+            <div class="stat-label" data-i18n="dashboard.totalProducts">Total Produits</div>
             <div class="stat-value" id="totalProducts">0</div>
           </div>
           <div class="stat-card">
-            <div class="stat-icon">💰</div>
-            <div class="stat-label">Valeur Stock</div>
+            <div class="stat-label" data-i18n="dashboard.stockValue">Valeur Stock</div>
             <div class="stat-value" id="totalValue">0€</div>
           </div>
           <div class="stat-card">
-            <div class="stat-icon">📈</div>
-            <div class="stat-label">Marge Totale</div>
+            <div class="stat-label" data-i18n="dashboard.marginRealized">Marge Réalisée</div>
             <div class="stat-value" id="totalMargin">0€</div>
           </div>
         </div>
 
-        <h3>Produits Récemment Ajoutés</h3>
+        <h3 data-i18n="dashboard.recentProducts">Produits Récemment Ajoutés</h3>
         <div class="table-container">
           <table>
             <thead>
               <tr>
-                <th>Nom</th>
-                <th>Marque</th>
-                <th>Prix Vente</th>
-                <th>Marge</th>
-                <th>Quantité</th>
+                <th data-i18n="products.name">Nom</th>
+                <th data-i18n="products.brand">Marque</th>
+                <th data-i18n="products.salePrice">Prix Vente</th>
+                <th data-i18n="products.margin">Marge</th>
+                <th data-i18n="products.quantity">Quantité</th>
               </tr>
             </thead>
             <tbody id="recentProducts">
-              <tr><td colspan="5" style="text-align: center; color: #999;">Aucun produit</td></tr>
+              <tr><td colspan="5" style="text-align: center; color: #999;" data-i18n="common.noProducts">Aucun produit</td></tr>
             </tbody>
           </table>
         </div>
@@ -381,49 +397,47 @@
         <h2>Catalogue des Produits</h2>
         <div style="margin-bottom: 1rem;">
           <button class="btn btn-primary" onclick="openAddForm()">+ Ajouter un Produit</button>
+        </d data-i18n="products.title">Catalogue des Produits</h2>
+        <div style="margin-bottom: 1rem;">
+          <button class="btn btn-primary" onclick="openAddForm()" data-i18n="products.addProduct">Ajouter un Produit</button>
         </div>
 
         <div class="search-box">
-          <input type="text" placeholder="Rechercher par nom, marque ou code..." id="searchInput" onkeyup="filterProducts()">
+          <input type="text" id="searchInput" onkeyup="filterProducts()" data-i18n-placeholder="products.searchPlaceholder">
         </div>
 
         <div class="table-container">
           <table>
             <thead>
               <tr>
-                <th>Nom</th>
-                <th>Marque</th>
-                <th>Prix Achat</th>
-                <th>Prix Vente</th>
-                <th>Marge</th>
-                <th>Quantité</th>
-                <th>Actions</th>
+                <th data-i18n="products.name">Nom</th>
+                <th data-i18n="products.brand">Marque</th>
+                <th data-i18n="products.purchasePrice">Prix Achat</th>
+                <th data-i18n="products.salePrice">Prix Vente</th>
+                <th data-i18n="products.margin">Marge</th>
+                <th data-i18n="products.quantity">Quantité</th>
+                <th data-i18n="products.actions">Actions</th>
               </tr>
             </thead>
             <tbody id="productsList">
-              <tr><td colspan="7" style="text-align: center; color: #999;">Aucun produit</td></tr>
-            </tbody>
-          </table>
-        </div>
+              <tr><td colspan="7" style="text-align: center; color: #999;" data-i18n="common.noProducts
       </div>
 
       <!-- Export/Import -->
       <div id="export" class="page">
-        <h2>Sauvegarde & Restauration</h2>
+        <h2 data-i18n="export.title">Sauvegarde & Restauration</h2>
         <div class="grid-2">
           <div style="background: #f9f9f9; padding: 2rem; border-radius: 8px; text-align: center;">
-            <div style="font-size: 2rem; margin-bottom: 1rem;">📤</div>
-            <h3>Exporter</h3>
-            <p style="margin-bottom: 1rem; color: #666;">Télécharger une sauvegarde JSON</p>
-            <button class="btn btn-success" onclick="exportData()">Exporter en JSON</button>
+            <h3 data-i18n="export.exportTitle">Exporter</h3>
+            <p style="margin-bottom: 1rem; color: #666;" data-i18n="export.exportDesc">Télécharger une sauvegarde JSON</p>
+            <button class="btn btn-success" onclick="exportData()" data-i18n="export.exportBtn">Exporter en JSON</button>
           </div>
 
           <div style="background: #f9f9f9; padding: 2rem; border-radius: 8px; text-align: center;">
-            <div style="font-size: 2rem; margin-bottom: 1rem;">📥</div>
-            <h3>Importer</h3>
-            <p style="margin-bottom: 1rem; color: #666;">Restaurer une sauvegarde précédente</p>
+            <h3 data-i18n="export.importTitle">Importer</h3>
+            <p style="margin-bottom: 1rem; color: #666;" data-i18n="export.importDesc">Restaurer une sauvegarde précédente</p>
             <input type="file" id="importFile" accept=".json" style="display: none;" onchange="handleImport()">
-            <button class="btn btn-primary" onclick="document.getElementById('importFile').click()">Importer un Fichier</button>
+            <button class="btn btn-primary" onclick="document.getElementById('importFile').click()" data-i18n="export.importBtn">Importer un Fichier</button>
           </div>
         </div>
       </div>
@@ -435,93 +449,198 @@
     <div class="modal-content">
       <div class="modal-header" id="formTitle">Ajouter un Produit</div>
       <form id="productForm" onsubmit="saveProduct(event)">
+        <div class="form-group"> data-i18n="form.addProduct">Ajouter un Produit</div>
+      <form id="productForm" onsubmit="saveProduct(event)">
         <div class="form-group">
-          <label>Nom du Produit *</label>
+          <label data-i18n="form.name">Nom du Produit *</label>
           <input type="text" id="formName" required>
         </div>
 
         <div class="form-group">
-          <label>Marque *</label>
+          <label data-i18n="form.brand">Marque *</label>
           <input type="text" id="formBrand" required>
         </div>
 
         <div class="form-group">
-          <label>Code Produit</label>
+          <label data-i18n="form.code">Code Produit</label>
           <input type="text" id="formCode">
         </div>
 
         <div class="form-group">
-          <label>Prix d'Achat €</label>
+          <label data-i18n="form.purchasePrice">Prix d'Achat</label>
           <input type="number" id="formPurchasePrice" step="0.01" min="0" onchange="calculateMargin()">
         </div>
 
         <div class="form-group">
-          <label>Prix de Vente €</label>
+          <label data-i18n="form.salePrice">Prix de Vente</label>
           <input type="number" id="formSalePrice" step="0.01" min="0" onchange="calculateMargin()">
         </div>
 
         <div class="form-group">
-          <label>Marge (Calculée)</label>
+          <label data-i18n="form.margin">Marge (Calculée)</label>
           <input type="number" id="formMargin" step="0.01" readonly style="background: #f5f5f5;">
         </div>
 
         <div class="form-group">
-          <label>Quantité en Stock</label>
+          <label data-i18n="form.quantity">Quantité en Stock</label>
           <input type="number" id="formQuantity" step="1" min="0" value="0">
         </div>
 
         <div class="form-group">
-          <label>Notes</label>
+          <label data-i18n="form.notes">Notes</label>
           <textarea id="formNotes" rows="3"></textarea>
         </div>
 
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" onclick="closeForm()">Annuler</button>
-          <button type="submit" class="btn btn-primary">Enregistrer</button>
-        </div>
-      </form>
+          <button type="button" class="btn btn-secondary" onclick="closeForm()" data-i18n="common.cancel">Annuler</button>
+          <button type="submit" class="btn btn-primary" data-i18n="common.save
     </div>
   </div>
 
   <script>
-    // 🗄️ App State
+    // App State
     let products = [];
+    let sales = [];
     let currentEditId = null;
     let language = localStorage.getItem('lang') || 'fr';
 
-    // 📝 Traductions
+    // Traductions
     const translations = {
       fr: {
-        'Total Produits': 'Total Produits',
-        'Valeur Stock': 'Valeur Stock',
-        'Marge Totale': 'Marge Totale',
-        'Aucun produit': 'Aucun produit',
-        'successSave': 'Produit enregistré avec succès!',
+        'nav.dashboard': 'Tableau de Bord',
+        'nav.products': 'Produits',
+        'nav.export': 'Sauvegarde',
+        'dashboard.title': 'Tableau de Bord',
+        'dashboard.totalProducts': 'Total Produits',
+        'dashboard.stockValue': 'Valeur Stock',
+        'dashboard.marginRealized': 'Marge Réalisée',
+        'dashboard.recentProducts': 'Produits Récemment Ajoutés',
+        'products.title': 'Catalogue des Produits',
+        'products.addProduct': 'Ajouter un Produit',
+        'products.searchPlaceholder': 'Rechercher par nom, marque ou code...',
+        'products.name': 'Nom',
+        'products.brand': 'Marque',
+        'products.purchasePrice': 'Prix Achat',
+        'products.salePrice': 'Prix Vente',
+        'products.margin': 'Marge',
+        'products.quantity': 'Quantité',
+        'products.actions': 'Actions',
+        'products.edit': 'Modifier',
+        'products.delete': 'Supprimer',
+        'products.sell': 'Vendre',
+        'export.title': 'Sauvegarde & Restauration',
+        'export.exportTitle': 'Exporter',
+        'export.exportDesc': 'Télécharger une sauvegarde JSON',
+        'export.exportBtn': 'Exporter en JSON',
+        'export.importTitle': 'Importer',
+        'export.importDesc': 'Restaurer une sauvegarde précédente',
+        'export.importBtn': 'Importer un Fichier',
+        'form.addProduct': 'Ajouter un Produit',
+        'form.editProduct': 'Modifier le Produit',
+        'form.name': 'Nom du Produit *',
+       Load Products from localStorage
+    function loadProducts() {
+      const saved = localStorage.getItem('pharmaProducts');
+      products = saved ? JSON.parse(saved) : [];
+      const savedSales = localStorage.getItem('pharmaSales');
+      sales = savedSales ? JSON.parse(savedSales) : [];
+      renderAll();
+    }
+
+    // Save Products to localStorage
+    function saveProducts() {
+      localStorage.setItem('pharmaProducts', JSON.stringify(products));
+      renderAll();
+    }
+
+    // Save Sales to localStorage
+    function saveSales() {
+      localStorage.setItem('pharmaSales', JSON.stringify(sales)Save': 'Produit enregistré avec succès!',
         'successDelete': 'Produit supprimé avec succès!',
+        'successSale': 'Vente enregistrée! Marge: ',
         'successExport': 'Données exportées avec succès!',
         'successImport': 'Données importées avec succès!',
         'confirmDelete': 'Êtes-vous sûr de vouloir supprimer ce produit?',
-        'confirmImport': 'Ceci remplacera tous les produits actuels. Continuer?'
+        'confirmImport': 'Ceci remplacera tous les produits actuels. Continuer?',
+        'errorNoStock': 'Stock insuffisant!'
       },
       en: {
-        'Total Produits': 'Total Products',
-        'Valeur Stock': 'Stock Value',
-        'Marge Totale': 'Total Margin',
-        'Aucun produit': 'No products',
+        'nav.dashboard': 'Dashboard',
+        'nav.products': 'Products',
+        'nav.export': 'Backup',
+        'dashboard.title': 'Dashboard',
+        'dashboard.totalProducts': 'Total Products',
+        'dashboard.stockValue': 'Stock Value',
+        'dashboard.marginRealized': 'Margin Realized',
+        'dashboard.recentProducts': 'Recently Added Products',
+        'products.title': 'Product Catalog',
+        'products.addProduct': 'Add Product',
+        'products.searchPlaceholder': 'Search by name, brand or code...',
+        'products.name': 'Name',
+        'products.brand': 'Brand',
+        'products.purchasePrice': 'Purchase Price',
+        'products.salePrice': 'Sale Price',
+        'products.margin': 'Margin',
+        'products.quantity': 'Quantity',
+        'products.actions': 'Actions',
+        'products.edit': 'Edit',
+        'products.delete': 'Delete',
+        'products.sell': 'Sell',
+        'export.title': 'Backup & Restore',
+        'export.exportTitle': 'Export',
+        'export.exportDesc': 'Download JSON backup',
+        'export.exportBtn': 'Export to JSON',
+        'export.importTitle': 'Import',
+        'export.importDesc': 'Restore previous backup',
+        'export.importBtn': 'Import File',
+        'form.addProduct': 'Add Product',
+        'form.editProduct': 'Edit Product',
+        'form.name': 'Product Name *',
+        'form.brand': 'Brand *',
+        'form.code': 'Product Code',
+        'form.purchasePrice': 'Purchase Price',
+        'form.salePrice': 'Sale Price',
+        'form.margin': 'Margin (Calculated)',
+        'form.quantity': 'Stock Quantity',
+        'form.notes': 'Notes',
+        'common.save': 'Save',
+        'common.cancel': 'Cancel',
+        'common.noProducts': 'No products',
         'successSave': 'Product saved successfully!',
         'successDelete': 'Product deleted successfully!',
+        'successSale': 'Sale recorded! Margin: ',
         'successExport': 'Data exported successfully!',
         'successImport': 'Data imported successfully!',
         'confirmDelete': 'Are you sure you want to delete this product?',
-        'confirmImport': 'This will replace all current products. Continue?'
+        'confirmImport': 'This will replace all current products. Continue?',
+        'errorNoStock': 'Insufficient stock!'
       }
     };
 
-    // 🔄 Change Language
+    // Translation function
+    function t(key) {
+      return translations[language][key] || key;
+    }
+
+    // Apply translations to page
+    function applyTranslations() {
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        el.textContent = t(key);
+      });
+      
+      document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+        const key = el.getAttribute('data-i18n-placeholder');
+        el.placeholder = t(key);
+      });
+    }
+
+    // Change Language
     function changeLanguage() {
       language = document.getElementById('langSelect').value;
       localStorage.setItem('lang', language);
-      location.reload();
+      applyTranslations();
+      renderAll();
     }
 
     // 📂 Load Products from localStorage
@@ -530,26 +649,26 @@
       products = saved ? JSON.parse(saved) : [];
       renderAll();
     }
-
-    // 💾 Save Products to localStorage
-    function saveProducts() {
-      localStorage.setItem('pharmaProducts', JSON.stringify(products));
-      renderAll();
-    }
-
-    // 📊 Render Dashboard
+Render Dashboard
     function renderDashboard() {
       const total = products.length;
       const value = products.reduce((sum, p) => sum + (parseFloat(p.salePrice || 0) * parseFloat(p.quantity || 0)), 0);
-      const margin = products.reduce((sum, p) => sum + (parseFloat(p.margin || 0) * parseFloat(p.quantity || 0)), 0);
+      const marginRealized = sales.reduce((sum, s) => sum + parseFloat(s.margin || 0), 0);
 
       document.getElementById('totalProducts').textContent = total;
       document.getElementById('totalValue').textContent = value.toFixed(2) + '€';
-      document.getElementById('totalMargin').textContent = margin.toFixed(2) + '€';
+      document.getElementById('totalMargin').textContent = marginRealized.toFixed(2) + '€';
 
       const recent = products.slice(-5).reverse();
       const html = recent.length ? recent.map(p => `
         <tr>
+          <td>${p.name}</td>
+          <td>${p.brand}</td>
+          <td>${parseFloat(p.salePrice || 0).toFixed(2)}€</td>
+          <td class="${parseFloat(p.margin || 0) < 0 ? 'margin-negative' : ''}">${parseFloat(p.margin || 0).toFixed(2)}€</td>
+          <td>${p.quantity || 0}</td>
+        </tr>
+      `).join('') : `<tr><td colspan="5" style="text-align: center; color: #999;">${t('common.noProducts')}</td></tr>`
           <td>${p.name}</td>
           <td>${p.brand}</td>
           <td>${parseFloat(p.salePrice || 0).toFixed(2)}€</td>
@@ -561,7 +680,7 @@
       document.getElementById('recentProducts').innerHTML = html;
     }
 
-    // 📋 Render Products Table
+    // Render Products Table
     function renderProducts() {
       const search = document.getElementById('searchInput').value.toLowerCase();
       const filtered = products.filter(p =>
@@ -579,36 +698,60 @@
           <td class="${parseFloat(p.margin || 0) < 0 ? 'margin-negative' : ''}">${parseFloat(p.margin || 0).toFixed(2)}€</td>
           <td>${p.quantity || 0}</td>
           <td class="actions">
-            <button class="btn btn-secondary" onclick="editProduct(${p.id})">Modifier</button>
-            <button class="btn btn-danger" onclick="deleteProduct(${p.id})">Supprimer</button>
+            <button class="sale-btn" onclick="sellProduct(${p.id})" ${p.quantity <= 0 ? 'disabled' : ''}>${t('products.sell')}</button>
+            <button class="btn btn-secondary" onclick="editProduct(${p.id})">${t('products.edit')}</button>
+            <button class="btn btn-danger" onclick="deleteProduct(${p.id})">${t('products.delete')}</button>
           </td>
         </tr>
-      `).join('') : '<tr><td colspan="7" style="text-align: center; color: #999;">Aucun produit</td></tr>';
+      `).join('') : `<tr><td colspan="7" style="text-align: center; color: #999;">${t('common.noProducts')}</td></tr>`;
 
       document.getElementById('productsList').innerHTML = html;
     }
-
-    // 🔄 Render All
+Render All
     function renderAll() {
       renderDashboard();
       renderProducts();
+      applyTranslations();
     }
 
-    // ➕ Open Add Form
+    // Sell Product
+    function sellProduct(id) {
+      const product = products.find(p => p.id === id);
+      if (!product || product.quantity <= 0) {
+        showAlert(t('errorNoStock'), 'error');
+        return;
+      }
+
+      product.quantity--;
+      const sale = {
+        id: Date.now(),
+        productId: id,
+        productName: product.name,
+        margin: parseFloat(product.margin || 0),
+        date: new Date().toISOString()
+      };
+      sales.push(sale);
+      
+      saveProducts();
+      saveSales();
+      showAlert(t('successSale') + sale.margin.toFixed(2) + '€', 'success');
+    }
+
+    // Open Add Form
     function openAddForm() {
       currentEditId = null;
-      document.getElementById('formTitle').textContent = 'Ajouter un Produit';
+      document.getElementById('formTitle').textContent = t('form.addProduct');
       document.getElementById('productForm').reset();
       document.getElementById('formModal').classList.add('active');
     }
 
-    // ✏️ Edit Product
+    // Edit Product
     function editProduct(id) {
       const product = products.find(p => p.id === id);
       if (!product) return;
 
       currentEditId = id;
-      document.getElementById('formTitle').textContent = 'Modifier le Produit';
+      document.getElementById('formTitle').textContent = t('form.editProduct');
       document.getElementById('formName').value = product.name;
       document.getElementById('formBrand').value = product.brand;
       document.getElementById('formCode').value = product.code || '';
@@ -620,15 +763,16 @@
       document.getElementById('formModal').classList.add('active');
     }
 
-    // 🗑️ Delete Product
+    // Delete Product
     function deleteProduct(id) {
-      if (!confirm(translations[language]['confirmDelete'])) return;
+      if (!confirm(t('confirmDelete'))) return;
       products = products.filter(p => p.id !== id);
       saveProducts();
+      showAlert(t('successDelete')
       showAlert(translations[language]['successDelete'], 'success');
     }
 
-    // 💾 Save Product
+    // Save Product
     function saveProduct(event) {
       event.preventDefault();
 
@@ -653,29 +797,29 @@
 
       saveProducts();
       closeForm();
-      showAlert(translations[language]['successSave'], 'success');
+      showAlert(t('successSave'), 'success');
     }
 
-    // 🧮 Calculate Margin
+    // Calculate Margin
     function calculateMargin() {
       const purchase = parseFloat(document.getElementById('formPurchasePrice').value || 0);
       const sale = parseFloat(document.getElementById('formSalePrice').value || 0);
       document.getElementById('formMargin').value = (sale - purchase).toFixed(2);
     }
 
-    // ❌ Close Form
+    // Close Form
     function closeForm() {
       document.getElementById('formModal').classList.remove('active');
     }
 
-    // 🔍 Filter Products
+    // Filter Products
     function filterProducts() {
       renderProducts();
     }
 
-    // 📤 Export Data
+    // Export Data
     function exportData() {
-      const data = { version: 1, exportDate: new Date().toISOString(), products };
+      const data = { version: 1, exportDate: new Date().toISOString(), products, sales };
       const json = JSON.stringify(data, null, 2);
       const blob = new Blob([json], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
@@ -684,15 +828,15 @@
       a.download = `pharma-db-${new Date().toISOString().split('T')[0]}.json`;
       a.click();
       URL.revokeObjectURL(url);
-      showAlert(translations[language]['successExport'], 'success');
+      showAlert(t('successExport'), 'success');
     }
 
-    // 📥 Import Data
+    // Import Data
     function handleImport() {
       const file = document.getElementById('importFile').files[0];
       if (!file) return;
 
-      if (!confirm(translations[language]['confirmImport'])) {
+      if (!confirm(t('confirmImport'))) {
         document.getElementById('importFile').value = '';
         return;
       }
@@ -702,17 +846,19 @@
         try {
           const data = JSON.parse(e.target.result);
           products = data.products || [];
+          sales = data.sales || [];
           saveProducts();
-          showAlert(translations[language]['successImport'], 'success');
+          saveSales();
+          showAlert(t('successImport'), 'success');
           document.getElementById('importFile').value = '';
         } catch (error) {
-          showAlert('Erreur lors de l\'import: ' + error.message, 'error');
+          showAlert('Erreur: ' + error.message, 'error');
         }
       };
       reader.readAsText(file);
     }
 
-    // 💬 Show Alert
+    // Show Alert
     function showAlert(message, type) {
       const alert = document.getElementById('alert');
       alert.textContent = message;
@@ -720,7 +866,7 @@
       setTimeout(() => alert.classList.remove('show'), 3000);
     }
 
-    // 📄 Show Page
+    // Show Page
     function showPage(page) {
       document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
       document.getElementById(page).classList.add('active');
@@ -728,9 +874,10 @@
       event.target.classList.add('active');
     }
 
-    // 🚀 Init
+    // Init
     document.getElementById('langSelect').value = language;
     loadProducts();
+    applyTranslations();
   </script>
 </body>
 </html>
