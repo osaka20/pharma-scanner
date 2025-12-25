@@ -228,7 +228,7 @@ export function formatBarcode(barcode) {
 export function truncate(text, maxLength = 100) {
   if (!text) return '';
   if (text.length <= maxLength) return text;
-  return text.substr(0, maxLength) + '...';
+  return text.substring(0, maxLength) + '...';
 }
 
 /**

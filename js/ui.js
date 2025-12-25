@@ -1,6 +1,7 @@
 // UI management module for Pharma Scanner
 
 import { t, applyTranslations } from './i18n.js';
+import { formatPrice, formatDate, formatBarcode, getCategoryIcon, daysUntilExpiry } from './utils.js';
 
 // Toast notification system
 const toastContainer = document.getElementById('toast-container');
@@ -349,54 +350,6 @@ export function showEmptyState(type = 'no-products') {
  */
 export function hideEmptyState() {
   document.getElementById('empty-state').classList.add('hidden');
-}
-
-// Helper functions (imported from utils)
-function formatPrice(price) {
-  if (price === null || price === undefined) return '0€';
-  return `${parseFloat(price).toFixed(2)}€`;
-}
-
-function formatDate(date) {
-  if (!date) return '';
-  const d = typeof date === 'string' ? new Date(date) : date;
-  return d.toLocaleDateString('fr-FR', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  });
-}
-
-function formatBarcode(barcode) {
-  if (!barcode) return '';
-  return barcode.replace(/(\d{3})(\d{3})(\d{3})(\d{3})/, '$1-$2-$3-$4');
-}
-
-function getCategoryIcon(category) {
-  const icons = {
-    painkiller: '💊',
-    antibiotic: '💉',
-    antiviral: '🦠',
-    antihistamine: '🤧',
-    vitamin: '💪',
-    digestive: '🍽️',
-    cardiovascular: '❤️',
-    dermatology: '🧴',
-    first_aid: '🩹',
-    ophthalmology: '👁️',
-    dental: '🦷',
-    other: '🧬'
-  };
-  return icons[category] || '🧬';
-}
-
-function daysUntilExpiry(expiryDate) {
-  if (!expiryDate) return Infinity;
-  const expiry = typeof expiryDate === 'string' ? new Date(expiryDate) : expiryDate;
-  const today = new Date();
-  const diffTime = expiry - today;
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-  return diffDays;
 }
 
 /**

@@ -40,7 +40,7 @@ self.addEventListener('install', event => {
     caches.open(CACHE_NAME)
       .then(cache => {
         console.log('[SW] Caching app shell');
-        return cache.addAll(urlsToCache.map(url => new Request(url, { cache: 'reload' })))
+        return cache.addAll(urlsToCache)
           .catch(err => {
             console.warn('[SW] Failed to cache some resources:', err);
             // Continue even if some resources fail to cache
