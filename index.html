@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+  <meta name="description" content="Scanner et gérer vos produits pharmaceutiques - 100% offline">
+  <meta name="theme-color" content="#667eea">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Pharma Scanner">
+  
+  <title>Pharma Scanner - Gestion Pharmaceutique</title>
+  
+  <!-- PWA Manifest -->
+  <link rel="manifest" href="/manifest.json">
+  
+  <!-- Icons -->
+  <link rel="icon" type="image/svg+xml" href="/assets/icons/favicon.svg">
+  <link rel="apple-touch-icon" href="/assets/icons/icon-192.png">
+  
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="/css/styles.css">
+  <link rel="stylesheet" href="/css/themes.css">
+  <link rel="stylesheet" href="/css/animations.css">
+  <link rel="stylesheet" href="/css/responsive.css">
+  
+  <!-- Preconnect for external resources -->
+  <link rel="preconnect" href="https://cdn.jsdelivr.net">
+</head>
+<body class="light-theme">
+  
+  <!-- Welcome Screen -->
+  <div id="welcome-screen" class="screen hidden">
+    <div class="welcome-container">
+      <img src="/assets/images/logo.svg" alt="Pharma Scanner Logo" class="welcome-logo">
+      <h1 class="welcome-title" data-i18n="welcome_title">Bienvenue dans Pharma Scanner</h1>
+      <p class="welcome-description" data-i18n="welcome_description">Gérez vos produits pharmaceutiques facilement et en toute sécurité</p>
+      
+      <div class="language-selector">
+        <label data-i18n="select_language">Sélectionner la langue</label>
+        <div class="language-buttons">
+          <button class="lang-btn active" data-lang="fr">🇫🇷 Français</button>
+          <button class="lang-btn" data-lang="en">🇬🇧 English</button>
+        </div>
+      </div>
+      
+      <button id="welcome-start-btn" class="btn btn-primary btn-large" data-i18n="get_started">Commencer</button>
+    </div>
+  </div>
+  
+  <!-- Auth Screen -->
+  <div id="auth-screen" class="screen hidden">
+    <div class="auth-container">
+      <img src="/assets/images/logo.svg" alt="Logo" class="auth-logo">
+      <h1 data-i18n="app_name">Pharma Scanner</h1>
+      
+      <div class="auth-tabs">
+        <button class="auth-tab active" data-tab="login" data-i18n="login">Connexion</button>
+        <button class="auth-tab" data-tab="signup" data-i18n="signup">Inscription</button>
+      </div>
+      
+      <!-- Login Form -->
+      <form id="login-form" class="auth-form">
+        <div class="form-group">
+          <label for="login-email" data-i18n="email">Email</label>
+          <input type="email" id="login-email" required autocomplete="email">
+        </div>
+        
+        <div class="form-group">
+          <label for="login-password" data-i18n="password">Mot de passe</label>
+          <input type="password" id="login-password" required autocomplete="current-password">
+        </div>
+        
+        <div class="form-group checkbox-group">
+          <label>
+            <input type="checkbox" id="remember-me">
+            <span data-i18n="remember_me">Se souvenir de moi</span>
+          </label>
+        </div>
+        
+        <button type="submit" class="btn btn-primary btn-block" data-i18n="sign_in">Se connecter</button>
+        
+        <p class="auth-switch">
+          <span data-i18n="dont_have_account">Vous n'avez pas de compte ?</span>
+          <a href="#" class="switch-to-signup" data-i18n="sign_up">S'inscrire</a>
+        </p>
+      </form>
+      
+      <!-- Signup Form -->
+      <form id="signup-form" class="auth-form hidden">
+        <div class="form-group">
+          <label for="signup-username" data-i18n="username">Nom d'utilisateur</label>
+          <input type="text" id="signup-username" required autocomplete="username">
+        </div>
+        
+        <div class="form-group">
+          <label for="signup-email" data-i18n="email">Email</label>
+          <input type="email" id="signup-email" required autocomplete="email">
+        </div>
+        
+        <div class="form-group">
+          <label for="signup-password" data-i18n="password">Mot de passe</label>
+          <input type="password" id="signup-password" required autocomplete="new-password">
+        </div>
+        
+        <div class="form-group">
+          <label for="signup-password-confirm" data-i18n="password_confirm">Confirmer le mot de passe</label>
+          <input type="password" id="signup-password-confirm" required autocomplete="new-password">
+        </div>
+        
+        <button type="submit" class="btn btn-primary btn-block" data-i18n="sign_up">S'inscrire</button>
+        
+        <p class="auth-switch">
+          <span data-i18n="already_have_account">Vous avez déjà un compte ?</span>
+          <a href="#" class="switch-to-login" data-i18n="login">Connexion</a>
+        </p>
+      </form>
+    </div>
+  </div>
+  
+  <!-- Main App -->
+  <div id="app" class="hidden">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="header-content">
+        <img src="/assets/images/logo.svg" alt="Logo" class="header-logo">
+        <h1 class="header-title" data-i18n="app_name">Pharma Scanner</h1>
+        <button id="settings-btn" class="icon-btn" aria-label="Settings">⚙️</button>
+      </div>
+    </header>
+    
+    <!-- Main Content -->
+    <main class="app-main">
+      <!-- Dashboard View -->
+      <div id="dashboard-view" class="view active">
+        <div class="greeting">
+          <h2><span data-i18n="hello">Bonjour</span> <span id="user-name"></span>! 👋</h2>
+        </div>
+        
+        <div class="stats-cards">
+          <div class="stat-card">
+            <div class="stat-icon">📦</div>
+            <div class="stat-value" id="stat-total">0</div>
+            <div class="stat-label" data-i18n="total_products">Total produits</div>
+          </div>
+          
+          <div class="stat-card">
+            <div class="stat-icon">💰</div>
+            <div class="stat-value" id="stat-average">0€</div>
+            <div class="stat-label" data-i18n="average_price">Prix moyen</div>
+          </div>
+          
+          <div class="stat-card">
+            <div class="stat-icon">💵</div>
+            <div class="stat-value" id="stat-value">0€</div>
+            <div class="stat-label" data-i18n="total_value">Valeur totale</div>
+          </div>
+          
+          <div class="stat-card">
+            <div class="stat-icon">⭐</div>
+            <div class="stat-value" id="stat-favorites">0</div>
+            <div class="stat-label" data-i18n="favorites">Favoris</div>
+          </div>
+        </div>
+        
+        <div class="dashboard-section">
+          <h3 data-i18n="category_distribution">Répartition par catégorie</h3>
+          <div class="chart-container">
+            <canvas id="category-chart"></canvas>
+          </div>
+        </div>
+        
+        <div class="dashboard-section">
+          <h3 data-i18n="recent_products">Produits récents</h3>
+          <div id="recent-products" class="product-list"></div>
+        </div>
+        
+        <div class="dashboard-section">
+          <h3 data-i18n="expiring_soon">Expire bientôt</h3>
+          <div id="expiring-products" class="product-list"></div>
+        </div>
+        
+        <div class="quick-actions">
+          <button class="btn btn-primary" id="quick-scan-btn">
+            <span>📷</span>
+            <span data-i18n="scan_barcode">Scanner</span>
+          </button>
+          <button class="btn btn-secondary" id="quick-add-btn">
+            <span>➕</span>
+            <span data-i18n="add_product">Ajouter</span>
+          </button>
+        </div>
+      </div>
+      
+      <!-- Scanner View -->
+      <div id="scanner-view" class="view">
+        <div class="scanner-container">
+          <video id="scanner-video" playsinline></video>
+          <div class="scanner-overlay">
+            <div class="scanner-frame">
+              <div class="scanner-line"></div>
+            </div>
+            <p class="scanner-instructions" data-i18n="scanner_instructions">Positionnez le code-barres dans le cadre</p>
+          </div>
+          <div class="scanner-controls">
+            <button id="flash-btn" class="scanner-btn">
+              <span>🔦</span>
+              <span data-i18n="flash">Flash</span>
+            </button>
+            <button id="switch-camera-btn" class="scanner-btn">
+              <span>🔄</span>
+              <span data-i18n="switch_camera">Changer</span>
+            </button>
+            <button id="close-scanner-btn" class="scanner-btn">
+              <span>✖️</span>
+              <span data-i18n="close">Fermer</span>
+            </button>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Add/Edit Product View -->
+      <div id="product-form-view" class="view">
+        <div class="form-container">
+          <h2 id="form-title" data-i18n="add_product">Ajouter un produit</h2>
+          
+          <form id="product-form">
+            <div class="photo-upload-section">
+              <div class="photo-preview" id="photo-preview">
+                <img id="preview-image" src="" alt="" class="hidden">
+                <div id="photo-placeholder" class="photo-placeholder">
+                  <span>📷</span>
+                  <span data-i18n="upload_photo">Télécharger une photo</span>
+                </div>
+              </div>
+              <input type="file" id="photo-input" accept="image/*" class="hidden">
+              <div class="photo-actions">
+                <button type="button" class="btn btn-sm" id="upload-photo-btn" data-i18n="upload_photo">Télécharger</button>
+                <button type="button" class="btn btn-sm" id="scan-barcode-btn">
+                  <span>📷</span>
+                  <span data-i18n="scan_barcode">Scanner</span>
+                </button>
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <label for="product-barcode" data-i18n="barcode">Code-barres</label>
+              <input type="text" id="product-barcode" placeholder="123456789012">
+            </div>
+            
+            <div class="form-group">
+              <label for="product-name" data-i18n="name">Nom *</label>
+              <input type="text" id="product-name" required>
+            </div>
+            
+            <div class="form-group">
+              <label for="product-price" data-i18n="price">Prix (€) *</label>
+              <input type="number" id="product-price" step="0.01" min="0" required>
+            </div>
+            
+            <div class="form-group">
+              <label for="product-category" data-i18n="category">Catégorie *</label>
+              <select id="product-category" required>
+                <option value="painkiller">💊 <span data-i18n="category_painkiller">Antidouleur</span></option>
+                <option value="antibiotic">💉 <span data-i18n="category_antibiotic">Antibiotique</span></option>
+                <option value="antiviral">🦠 <span data-i18n="category_antiviral">Antiviral</span></option>
+                <option value="antihistamine">🤧 <span data-i18n="category_antihistamine">Antihistaminique</span></option>
+                <option value="vitamin">💪 <span data-i18n="category_vitamin">Vitamines</span></option>
+                <option value="digestive">🍽️ <span data-i18n="category_digestive">Digestif</span></option>
+                <option value="cardiovascular">❤️ <span data-i18n="category_cardiovascular">Cardiovasculaire</span></option>
+                <option value="dermatology">🧴 <span data-i18n="category_dermatology">Dermatologie</span></option>
+                <option value="first_aid">🩹 <span data-i18n="category_first_aid">Premiers Soins</span></option>
+                <option value="ophthalmology">👁️ <span data-i18n="category_ophthalmology">Ophtalmologie</span></option>
+                <option value="dental">🦷 <span data-i18n="category_dental">Dentaire</span></option>
+                <option value="other">🧬 <span data-i18n="category_other">Autre</span></option>
+              </select>
+            </div>
+            
+            <div class="form-group">
+              <label for="product-description" data-i18n="description">Description</label>
+              <textarea id="product-description" rows="3"></textarea>
+            </div>
+            
+            <div class="form-group">
+              <label for="product-expiry" data-i18n="expiry_date">Date d'expiration</label>
+              <input type="date" id="product-expiry">
+            </div>
+            
+            <div class="form-group">
+              <label for="product-quantity" data-i18n="quantity">Quantité</label>
+              <input type="number" id="product-quantity" min="0" value="1">
+            </div>
+            
+            <div class="form-actions">
+              <button type="button" class="btn btn-secondary" id="cancel-form-btn" data-i18n="cancel">Annuler</button>
+              <button type="submit" class="btn btn-primary" data-i18n="save">Enregistrer</button>
+            </div>
+          </form>
+        </div>
+      </div>
+      
+      <!-- Products List View -->
+      <div id="products-view" class="view">
+        <div class="products-header">
+          <div class="search-bar">
+            <input type="text" id="search-input" data-i18n-placeholder="search_products" placeholder="Rechercher des produits...">
+            <span class="search-icon">🔍</span>
+          </div>
+          
+          <div class="filters">
+            <div class="category-filters" id="category-filters">
+              <button class="filter-chip active" data-category="all" data-i18n="all_categories">Toutes</button>
+            </div>
+            
+            <div class="view-controls">
+              <select id="sort-select">
+                <option value="name-asc" data-i18n="sort_name_asc">Nom (A-Z)</option>
+                <option value="name-desc" data-i18n="sort_name_desc">Nom (Z-A)</option>
+                <option value="price-asc" data-i18n="sort_price_asc">Prix ↑</option>
+                <option value="price-desc" data-i18n="sort_price_desc">Prix ↓</option>
+                <option value="date-desc" data-i18n="sort_date_desc">Plus récent</option>
+                <option value="date-asc" data-i18n="sort_date_asc">Plus ancien</option>
+              </select>
+              
+              <button id="view-toggle-btn" class="icon-btn" data-view="cards" aria-label="Toggle view">
+                <span class="view-icon">📋</span>
+              </button>
+            </div>
+          </div>
+        </div>
+        
+        <div id="products-list" class="products-grid"></div>
+        
+        <div id="empty-state" class="empty-state hidden">
+          <img src="/assets/images/empty-states/no-products.svg" alt="No products">
+          <h3 data-i18n="no_products">Aucun produit trouvé</h3>
+          <p data-i18n="no_products_description">Commencez par ajouter votre premier produit</p>
+          <button class="btn btn-primary" id="empty-add-btn" data-i18n="add_product">Ajouter un produit</button>
+        </div>
+      </div>
+      
+      <!-- Profile View -->
+      <div id="profile-view" class="view">
+        <div class="profile-container">
+          <div class="profile-header">
+            <div class="profile-photo" id="profile-photo">
+              <img id="profile-photo-img" src="" alt="" class="hidden">
+              <div id="profile-photo-placeholder" class="profile-placeholder">👤</div>
+            </div>
+            <input type="file" id="profile-photo-input" accept="image/*" class="hidden">
+            <button class="btn btn-sm" id="change-photo-btn" data-i18n="change_photo">Changer la photo</button>
+            
+            <h2 id="profile-username"></h2>
+            <p id="profile-email"></p>
+            <p class="member-since">
+              <span data-i18n="member_since">Membre depuis</span>
+              <span id="profile-member-since"></span>
+            </p>
+          </div>
+          
+          <div class="profile-stats">
+            <div class="profile-stat">
+              <div class="stat-value" id="profile-stat-products">0</div>
+              <div class="stat-label" data-i18n="products_added">Produits ajoutés</div>
+            </div>
+            <div class="profile-stat">
+              <div class="stat-value" id="profile-stat-favorites">0</div>
+              <div class="stat-label" data-i18n="favorite_products">Produits favoris</div>
+            </div>
+            <div class="profile-stat">
+              <div class="stat-value" id="profile-stat-value">0€</div>
+              <div class="stat-label" data-i18n="inventory_value">Valeur inventaire</div>
+            </div>
+          </div>
+          
+          <div class="profile-actions">
+            <button class="btn btn-outline" id="export-btn">
+              <span>📤</span>
+              <span data-i18n="export_data">Exporter les données</span>
+            </button>
+            <button class="btn btn-outline" id="import-btn">
+              <span>📥</span>
+              <span data-i18n="import_data">Importer les données</span>
+            </button>
+            <input type="file" id="import-input" accept=".json" class="hidden">
+            <button class="btn btn-danger" id="logout-btn">
+              <span>🚪</span>
+              <span data-i18n="logout">Déconnexion</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </main>
+    
+    <!-- Bottom Navigation -->
+    <nav class="bottom-nav">
+      <button class="nav-item active" data-view="dashboard">
+        <span class="nav-icon">🏠</span>
+        <span class="nav-label" data-i18n="nav_home">Accueil</span>
+      </button>
+      <button class="nav-item" data-view="scanner">
+        <span class="nav-icon">📷</span>
+        <span class="nav-label" data-i18n="nav_scan">Scanner</span>
+      </button>
+      <button class="nav-item" data-view="product-form">
+        <span class="nav-icon">➕</span>
+        <span class="nav-label" data-i18n="nav_add">Ajouter</span>
+      </button>
+      <button class="nav-item" data-view="products">
+        <span class="nav-icon">📋</span>
+        <span class="nav-label" data-i18n="nav_products">Produits</span>
+      </button>
+      <button class="nav-item" data-view="profile">
+        <span class="nav-icon">👤</span>
+        <span class="nav-label" data-i18n="nav_profile">Profil</span>
+      </button>
+    </nav>
+  </div>
+  
+  <!-- Settings Modal -->
+  <div id="settings-modal" class="modal hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 data-i18n="settings">Paramètres</h2>
+        <button class="modal-close" aria-label="Close">✖️</button>
+      </div>
+      <div class="modal-body">
+        <div class="setting-group">
+          <label data-i18n="language">Langue</label>
+          <div class="setting-buttons">
+            <button class="setting-btn lang-setting-btn" data-lang="fr">🇫🇷 Français</button>
+            <button class="setting-btn lang-setting-btn" data-lang="en">🇬🇧 English</button>
+          </div>
+        </div>
+        
+        <div class="setting-group">
+          <label data-i18n="theme">Thème</label>
+          <div class="setting-buttons">
+            <button class="setting-btn theme-btn" data-theme="light">☀️ <span data-i18n="light_mode">Clair</span></button>
+            <button class="setting-btn theme-btn" data-theme="dark">🌙 <span data-i18n="dark_mode">Sombre</span></button>
+            <button class="setting-btn theme-btn" data-theme="auto">🔄 <span data-i18n="auto_mode">Auto</span></button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Product Detail Modal -->
+  <div id="product-modal" class="modal hidden">
+    <div class="modal-content modal-large">
+      <div class="modal-header">
+        <h2 data-i18n="product_details">Détails du produit</h2>
+        <button class="modal-close" aria-label="Close">✖️</button>
+      </div>
+      <div class="modal-body" id="product-modal-body">
+        <!-- Content will be dynamically inserted -->
+      </div>
+    </div>
+  </div>
+  
+  <!-- Confirm Modal -->
+  <div id="confirm-modal" class="modal hidden">
+    <div class="modal-content modal-small">
+      <div class="modal-header">
+        <h2 id="confirm-title" data-i18n="confirm_delete">Confirmer</h2>
+      </div>
+      <div class="modal-body">
+        <p id="confirm-message"></p>
+        <div class="modal-actions">
+          <button class="btn btn-secondary" id="confirm-no" data-i18n="no">Non</button>
+          <button class="btn btn-danger" id="confirm-yes" data-i18n="yes">Oui</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Toast Notifications -->
+  <div id="toast-container" class="toast-container"></div>
+  
+  <!-- Loading Spinner -->
+  <div id="loading" class="loading-overlay hidden">
+    <div class="spinner"></div>
+  </div>
+  
+  <!-- External Libraries -->
+  <script src="https://cdn.jsdelivr.net/npm/idb@8.0.0/build/umd.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@zxing/library@0.20.0/umd/index.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  
+  <!-- App Scripts -->
+  <script type="module" src="/js/utils.js"></script>
+  <script type="module" src="/js/db.js"></script>
+  <script type="module" src="/js/i18n.js"></script>
+  <script type="module" src="/js/ui.js"></script>
+  <script type="module" src="/js/auth.js"></script>
+  <script type="module" src="/js/products.js"></script>
+  <script type="module" src="/js/scanner.js"></script>
+  <script type="module" src="/js/stats.js"></script>
+  <script type="module" src="/js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,179 @@
+/* Pharma Scanner - Theme Styles */
+
+/* Dark Theme */
+body.dark-theme {
+  --primary: #7c3aed;
+  --primary-dark: #6d28d9;
+  --secondary: #10b981;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+  --success: #10b981;
+  
+  --bg-primary: #1a1a2e;
+  --bg-secondary: #16213e;
+  --bg-tertiary: #0f3460;
+  
+  --text-primary: #e0e0e0;
+  --text-secondary: #b0b0b0;
+  --text-tertiary: #808080;
+  
+  --border: #2a2a3e;
+  --shadow: rgba(0, 0, 0, 0.3);
+  --shadow-lg: rgba(0, 0, 0, 0.5);
+}
+
+/* Auto theme based on system preference */
+@media (prefers-color-scheme: dark) {
+  body.auto-theme {
+    --primary: #7c3aed;
+    --primary-dark: #6d28d9;
+    --secondary: #10b981;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+    --success: #10b981;
+    
+    --bg-primary: #1a1a2e;
+    --bg-secondary: #16213e;
+    --bg-tertiary: #0f3460;
+    
+    --text-primary: #e0e0e0;
+    --text-secondary: #b0b0b0;
+    --text-tertiary: #808080;
+    
+    --border: #2a2a3e;
+    --shadow: rgba(0, 0, 0, 0.3);
+    --shadow-lg: rgba(0, 0, 0, 0.5);
+  }
+}
+
+/* Light theme is default in styles.css */
+body.light-theme,
+body.auto-theme {
+  /* Variables already defined in styles.css */
+}
+
+/* Theme-specific adjustments */
+.dark-theme .app-header {
+  background: linear-gradient(135deg, #7c3aed, #6d28d9);
+}
+
+.dark-theme .card,
+.dark-theme .stat-card,
+.dark-theme .product-card {
+  background: var(--bg-secondary);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+.dark-theme input,
+.dark-theme textarea,
+.dark-theme select {
+  background: var(--bg-tertiary);
+  border-color: var(--border);
+  color: var(--text-primary);
+}
+
+.dark-theme input::placeholder,
+.dark-theme textarea::placeholder {
+  color: var(--text-tertiary);
+}
+
+.dark-theme .btn-secondary {
+  background: var(--bg-tertiary);
+  border-color: var(--border);
+  color: var(--text-primary);
+}
+
+.dark-theme .bottom-nav {
+  background: var(--bg-secondary);
+  border-top-color: var(--border);
+}
+
+.dark-theme .modal {
+  background: rgba(0, 0, 0, 0.7);
+}
+
+.dark-theme .modal-content {
+  background: var(--bg-secondary);
+}
+
+.dark-theme .modal-header {
+  border-bottom-color: var(--border);
+}
+
+.dark-theme .auth-container {
+  background: var(--bg-secondary);
+}
+
+.dark-theme .auth-tabs {
+  border-bottom-color: var(--border);
+}
+
+.dark-theme .lang-btn {
+  background: var(--bg-tertiary);
+  border-color: var(--border);
+  color: var(--text-primary);
+}
+
+.dark-theme .filter-chip {
+  background: var(--bg-tertiary);
+  border-color: var(--border);
+  color: var(--text-primary);
+}
+
+.dark-theme .setting-btn {
+  background: var(--bg-tertiary);
+  border-color: var(--border);
+  color: var(--text-primary);
+}
+
+.dark-theme .icon-btn {
+  background: var(--bg-tertiary);
+  border-color: var(--border);
+  color: var(--text-primary);
+}
+
+.dark-theme .toast {
+  background: var(--bg-secondary);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+}
+
+.dark-theme .form-container,
+.dark-theme .profile-header,
+.dark-theme .profile-stat,
+.dark-theme .chart-container {
+  background: var(--bg-secondary);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+.dark-theme .photo-preview {
+  background: var(--bg-tertiary);
+  border-color: var(--border);
+}
+
+/* Glassmorphism effects for both themes */
+.glassmorphism {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.dark-theme .glassmorphism {
+  background: rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Smooth theme transitions */
+body,
+.card,
+.btn,
+input,
+textarea,
+select,
+.modal-content,
+.bottom-nav,
+.app-header {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
