@@ -1302,3 +1302,205 @@ input[type="checkbox"] {
 .product-list-content {
   flex: 1;
 }
+/* ===== SCANNER AMÉLIORE ===== */
+.scanner-controls-top {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin:  20px;
+    flex-wrap: wrap;
+}
+
+.scanner-controls-top .btn {
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+#scanner-container {
+    position:  relative;
+    width: 100%;
+    max-width: 600px;
+    height: 400px;
+    margin: 20px auto;
+    background: #000;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+#scanner-container.hidden {
+    display: none ! important;
+}
+
+#interactive {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+#interactive video {
+    width: 100%;
+    height:  100%;
+    object-fit: cover;
+}
+
+#interactive canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+.scanner-overlay {
+    position:  absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+}
+
+.scan-frame {
+    position: relative;
+    width: 70%;
+    height: 50%;
+    border:  2px solid rgba(102, 126, 234, 0.8);
+    border-radius: 8px;
+    box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.5);
+}
+
+.scan-frame .corner {
+    position: absolute;
+    width: 25px;
+    height: 25px;
+    border:  4px solid #667eea;
+}
+
+.scan-frame .corner.tl { top: -2px; left: -2px; border-right: none; border-bottom: none; }
+.scan-frame .corner.tr { top: -2px; right:  -2px; border-left:  none; border-bottom: none; }
+.scan-frame .corner.bl { bottom: -2px; left: -2px; border-right: none; border-top: none; }
+.scan-frame .corner.br { bottom: -2px; right: -2px; border-left: none; border-top: none; }
+
+.scan-line {
+    position: absolute;
+    top: 0;
+    left:  0;
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, #667eea, transparent);
+    animation: scan 2s linear infinite;
+}
+
+@keyframes scan {
+    0%, 100% { top: 0; }
+    50% { top: 100%; }
+}
+
+.scan-text {
+    margin-top: 20px;
+    color: white;
+    background: rgba(0,0,0,0.7);
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size:  14px;
+}
+
+/* Modal pour produit trouvé */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height:  100%;
+    background: rgba(0,0,0,0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    animation: fadeIn 0.3s;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.modal-overlay .modal-content {
+    background: white;
+    padding: 30px;
+    border-radius: 16px;
+    max-width:  500px;
+    width:  90%;
+    max-height: 80vh;
+    overflow-y: auto;
+    animation: slideUp 0.3s;
+}
+
+@keyframes slideUp {
+    from { transform: translateY(50px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+.modal-overlay .modal-content h3 {
+    margin-top: 0;
+    color:  #667eea;
+    font-size: 24px;
+}
+
+.modal-overlay .modal-content img {
+    max-width: 200px;
+    border-radius: 8px;
+    margin:  10px auto;
+    display: block;
+}
+
+.modal-overlay .modal-content p {
+    margin: 10px 0;
+    line-height: 1.6;
+}
+
+.modal-overlay .modal-content hr {
+    margin: 20px 0;
+    border: none;
+    border-top: 1px solid #eee;
+}
+
+.modal-overlay .modal-content label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 600;
+}
+
+.modal-overlay .modal-content input[type="number"] {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #e0e0e0;
+    border-radius:  8px;
+    font-size: 16px;
+    margin-bottom: 15px;
+}
+
+.modal-overlay .modal-content input[type="number"]:focus {
+    outline: none;
+    border-color: #667eea;
+}
+
+.modal-overlay button {
+    padding: 12px 20px;
+    border: none;
+    border-radius: 8px;
+    font-size:  14px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.modal-overlay button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}

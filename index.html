@@ -191,32 +191,24 @@
           </button>
         </div>
       </div>
-      
+
       <!-- Scanner View -->
       <div id="scanner-view" class="view">
-        <div class="scanner-container">
-          <video id="scanner-video" playsinline></video>
-          <div class="scanner-overlay">
-            <div class="scanner-frame">
-              <div class="scanner-line"></div>
-            </div>
-            <p class="scanner-instructions" data-i18n="scanner_instructions">Positionnez le code-barres dans le cadre</p>
-          </div>
-          <div class="scanner-controls">
-            <button id="flash-btn" class="scanner-btn">
-              <span>🔦</span>
-              <span data-i18n="flash">Flash</span>
-            </button>
-            <button id="switch-camera-btn" class="scanner-btn">
-              <span>🔄</span>
-              <span data-i18n="switch_camera">Changer</span>
-            </button>
-            <button id="close-scanner-btn" class="scanner-btn">
-              <span>✖️</span>
-              <span data-i18n="close">Fermer</span>
-            </button>
-          </div>
+        <div class="scanner-controls-top">
+          <button id="start-scan-btn" class="btn btn-primary">
+            📷 <span data-i18n="start_scan">Démarrer le Scanner</span>
+          </button>
+          <button id="stop-scan-btn" class="btn btn-danger hidden">
+            ⏹️ <span data-i18n="stop_scan">Arrêter</span>
+          </button>
+          <button id="manual-entry-btn" class="btn btn-secondary">
+            ✍️ <span data-i18n="manual_entry">Saisie Manuelle</span>
+          </button>
         </div>
+
+        <div id="scanner-container" class="hidden"></div>
+
+        <div id="scan-result"></div>
       </div>
       
       <!-- Add/Edit Product View -->
