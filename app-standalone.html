@@ -108,9 +108,17 @@
         <h2 data-translate="productsTitle">Product Catalog</h2>
         <div style="margin-bottom: 1rem;"><button class="btn btn-primary" onclick="openAddForm()" data-translate="addProduct">Add Product</button></div>
         <div class="search-box"><input type="text" id="searchInput" onkeyup="filterProducts()" data-translate-placeholder="searchPlaceholder" placeholder="Search..."></div>
+        <div style="margin: 0 0 0.75rem 0; display:flex; flex-wrap:wrap; gap:0.5rem; align-items:center;">
+          <label style="font-size:12px; color:#555;">
+            <input type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAll(this.checked)"> <span data-translate="selectAll">Select all</span>
+          </label>
+          <input type="number" id="bulkQty" min="0" step="1" style="width:110px; padding:0.35rem; border:1px solid #ccc; border-radius:4px;" data-translate-placeholder="bulkQtyPlaceholder" placeholder="Quantity">
+          <button class="btn btn-secondary" onclick="bulkSetQuantity()" data-translate="bulkSetQty">Set quantity for selected</button>
+          <button class="btn btn-danger" onclick="bulkDelete()" data-translate="bulkDelete">Delete selected</button>
+        </div>
         <div class="table-container">
-          <table><thead><tr><th data-translate="name">Name</th><th data-translate="brand">Brand</th><th data-translate="purchasePrice">Purchase Price</th><th data-translate="salePrice">Sale Price</th><th data-translate="margin">Margin</th><th data-translate="quantity">Quantity</th><th data-translate="actions">Actions</th></tr></thead>
-          <tbody id="productsList"><tr><td colspan="7" style="text-align: center; color: #999;" data-translate="noProducts">No products</td></tr></tbody></table>
+          <table><thead><tr><th></th><th data-translate="name">Name</th><th data-translate="brand">Brand</th><th data-translate="purchasePrice">Purchase Price</th><th data-translate="salePrice">Sale Price</th><th data-translate="margin">Margin</th><th data-translate="quantity">Quantity</th><th data-translate="sellQty">Qty to sell</th><th data-translate="actions">Actions</th></tr></thead>
+          <tbody id="productsList"><tr><td colspan="9" style="text-align: center; color: #999;" data-translate="noProducts">No products</td></tr></tbody></table>
         </div>
       </div>
 
@@ -195,6 +203,7 @@
     let useServerStore = true; // Prefer server-based file store
     let dirHandle = null;
     let useFileStore = false;
+    let selectedProducts = new Set();
 
     const translations = {
       en: {
@@ -268,7 +277,13 @@
         stockError: 'Insufficient stock!',
         noSaleToUndo: 'No recent sale to undo for this product!',
         resetConfirm: 'Reset realized margin to zero? History will stay.',
-        resetSuccess: 'Margin reset to zero.'
+        resetSuccess: 'Margin reset to zero.',
+        sellQty: 'Qty to sell',
+        bulkSetQty: 'Set quantity for selected',
+        bulkDelete: 'Delete selected',
+        bulkQtyPlaceholder: 'Quantity',
+        selectAll: 'Select all',
+        selectionNone: 'No product selected'
       },
       ar: {
         appTitle: 'Pharma Scanner',
@@ -341,7 +356,13 @@
         stockError: 'مخزون غير كافٍ!',
         noSaleToUndo: 'لا توجد عملية بيع حديثة للتراجع عنها لهذا المنتج!',
         resetConfirm: 'تصفير الهامش المحقق؟ سيبقى السجل محفوظاً.',
-        resetSuccess: 'تم تصفير الهامش.'
+        resetSuccess: 'تم تصفير الهامش.',
+        sellQty: 'الكمية للبيع',
+        bulkSetQty: 'تعيين الكمية للمحدد',
+        bulkDelete: 'حذف العناصر المحددة',
+        bulkQtyPlaceholder: 'الكمية',
+        selectAll: 'تحديد الكل',
+        selectionNone: 'لا يوجد منتج محدد'
       }
     };
 
@@ -423,8 +444,8 @@
       return JSON.stringify({
         v: 2,
         p: products.map(p => ({ i: p.id, n: p.name, b: p.brand, c: p.code, bp: p.purchasePrice, sp: p.salePrice, m: p.margin, q: p.quantity, no: p.notes })),
-        // sales tuple: [date, productId, margin, typeCode, undoneFlag]
-        s: sales.map(s => [s.date, s.productId, s.margin, s.type === 'undo' ? 'u' : 's', s.undone ? 1 : 0]),
+        // sales tuple: [date, productId, marginTotal, typeCode, undoneFlag, qty]
+        s: sales.map(s => [s.date, s.productId, s.marginTotal, s.type === 'undo' ? 'u' : 's', s.undone ? 1 : 0, s.qty || 1]),
         o: marginOffset
       });
     }
@@ -446,9 +467,10 @@
         sales = Array.isArray(data.s) ? data.s.map(s => ({
           date: s[0],
           productId: s[1],
-          margin: s[2],
+          marginTotal: s[2],
           type: s[3] === 'u' ? 'undo' : 'sale',
           undone: !!s[4],
+          qty: s[5] || 1,
           productName: ''
         })) : [];
         marginOffset = parseFloat(data.o || 0) || 0;
@@ -458,9 +480,14 @@
         sales = Array.isArray(data.sales) ? data.sales : [];
         marginOffset = parseFloat(data.marginOffset || 0) || 0;
       }
-      // reattach product names for rendering
+      // reattach product names and normalize fields for rendering
       const names = new Map(products.map(p => [p.id, p.name]));
-      sales = sales.map(s => ({ ...s, productName: s.productName || names.get(s.productId) || '(deleted)' }));
+      sales = sales.map(s => ({
+        ...s,
+        marginTotal: s.marginTotal !== undefined ? s.marginTotal : (s.margin !== undefined ? s.margin : 0),
+        qty: s.qty || 1,
+        productName: s.productName || names.get(s.productId) || '(deleted)'
+      }));
     }
 
     async function loadProducts() {
@@ -506,7 +533,7 @@
     function renderDashboard() {
       const total = products.length;
       const value = products.reduce((s, p) => s + (parseFloat(p.salePrice || 0) * parseFloat(p.quantity || 0)), 0);
-      const marginRaw = sales.reduce((s, sale) => s + parseFloat(sale.margin || 0), 0);
+      const marginRaw = sales.reduce((s, sale) => s + parseFloat(sale.marginTotal || 0), 0);
       const margin = marginRaw - marginOffset;
       
       document.getElementById('totalProducts').textContent = total;
@@ -548,9 +575,9 @@
       document.getElementById('historyList').innerHTML = list.length ? list.map(sale => {
         const date = new Date(sale.date);
         const formatted = `${date.toLocaleDateString()} ${date.toLocaleTimeString()}`;
-        const marginVal = parseFloat(sale.margin || 0);
+        const marginVal = parseFloat(sale.marginTotal || 0);
         const typeLabel = sale.type === 'undo' ? t('undoType') : t('sale');
-        const qty = sale.type === 'undo' ? '+1' : '-1';
+        const qty = sale.type === 'undo' ? `+${sale.qty || 1}` : `-${sale.qty || 1}`;
         const marginClass = marginVal < 0 ? 'margin-negative' : '';
         return `<tr><td>${formatted}</td><td>${sale.productName}</td><td class="${marginClass}">${marginVal.toFixed(2)}€</td><td>${qty}</td><td>${typeLabel}</td></tr>`;
       }).join('') : `<tr><td colspan="5" style="text-align: center; color: #999;">${t('noSales')}</td></tr>`;
@@ -579,18 +606,59 @@
       
       document.getElementById('productsList').innerHTML = filtered.length ? filtered.map(p => {
         const hasUndoableSale = sales.some(s => s.productId === p.id && s.type === 'sale' && !s.undone);
+        const checked = selectedProducts.has(p.id) ? 'checked' : '';
         return `
-        <tr><td>${p.name}</td><td>${p.brand}</td><td>${parseFloat(p.purchasePrice || 0).toFixed(2)}€</td>
-        <td>${parseFloat(p.salePrice || 0).toFixed(2)}€</td>
-        <td class="${parseFloat(p.margin || 0) < 0 ? 'margin-negative' : ''}">${parseFloat(p.margin || 0).toFixed(2)}€</td>
-        <td>${p.quantity || 0}</td>
-        <td class="actions">
-          <button class="sale-btn" onclick="sellProduct(${p.id})" ${p.quantity <= 0 ? 'disabled' : ''}>${t('sell')}</button>
-          <button class="undo-btn" onclick="undoSale(${p.id})" ${!hasUndoableSale ? 'disabled' : ''}>${t('undo')}</button>
-          <button class="btn btn-secondary" onclick="editProduct(${p.id})">${t('edit')}</button>
-          <button class="btn btn-danger" onclick="deleteProduct(${p.id})">${t('delete')}</button>
-        </td></tr>
-      `}).join('') : `<tr><td colspan="7" style="text-align: center; color: #999;">${t('noProducts')}</td></tr>`;
+        <tr>
+          <td style="text-align:center;"><input type="checkbox" ${checked} onchange="toggleSelect(${p.id}, this.checked)"></td>
+          <td>${p.name}</td><td>${p.brand}</td><td>${parseFloat(p.purchasePrice || 0).toFixed(2)}€</td>
+          <td>${parseFloat(p.salePrice || 0).toFixed(2)}€</td>
+          <td class="${parseFloat(p.margin || 0) < 0 ? 'margin-negative' : ''}">${parseFloat(p.margin || 0).toFixed(2)}€</td>
+          <td>${p.quantity || 0}</td>
+          <td><input type="number" id="sellQty-${p.id}" min="1" step="1" value="1" style="width:70px; padding:0.2rem; border:1px solid #ccc; border-radius:4px;"></td>
+          <td class="actions">
+            <button class="sale-btn" onclick="sellProduct(${p.id})" ${p.quantity <= 0 ? 'disabled' : ''}>${t('sell')}</button>
+            <button class="undo-btn" onclick="undoSale(${p.id})" ${!hasUndoableSale ? 'disabled' : ''}>${t('undo')}</button>
+            <button class="btn btn-secondary" onclick="editProduct(${p.id})">${t('edit')}</button>
+            <button class="btn btn-danger" onclick="deleteProduct(${p.id})">${t('delete')}</button>
+          </td>
+        </tr>
+      `}).join('') : `<tr><td colspan="9" style="text-align: center; color: #999;">${t('noProducts')}</td></tr>`;
+      const selectAllEl = document.getElementById('selectAllCheckbox');
+      if (selectAllEl) {
+        selectAllEl.checked = filtered.length > 0 && filtered.every(p => selectedProducts.has(p.id));
+        selectAllEl.indeterminate = filtered.some(p => selectedProducts.has(p.id)) && !selectAllEl.checked;
+      }
+    }
+
+    function toggleSelect(id, checked) {
+      if (checked) selectedProducts.add(id); else selectedProducts.delete(id);
+    }
+
+    function toggleSelectAll(checked) {
+      if (checked) {
+        products.forEach(p => selectedProducts.add(p.id));
+      } else {
+        selectedProducts.clear();
+      }
+      renderProducts();
+    }
+
+    function bulkDelete() {
+      if (selectedProducts.size === 0) return showAlert(t('selectionNone'), 'error');
+      products = products.filter(p => !selectedProducts.has(p.id));
+      selectedProducts.clear();
+      saveProducts();
+      showAlert(t('deleteSuccess'), 'success');
+    }
+
+    function bulkSetQuantity() {
+      if (selectedProducts.size === 0) return showAlert(t('selectionNone'), 'error');
+      const input = document.getElementById('bulkQty');
+      const qty = parseInt(input && input.value ? input.value : 0);
+      if (isNaN(qty) || qty < 0) return showAlert(t('stockError'), 'error');
+      products = products.map(p => selectedProducts.has(p.id) ? { ...p, quantity: qty } : p);
+      saveProducts();
+      showAlert(t('saveSuccess'), 'success');
     }
 
     function renderAll() { 
@@ -602,23 +670,30 @@
 
     function sellProduct(id) {
       const product = products.find(p => p.id === id);
-      if (!product || product.quantity <= 0) return showAlert(t('stockError'), 'error');
-      
-      product.quantity--;
+      if (!product) return;
+      const qtyInput = document.getElementById(`sellQty-${id}`);
+      const qty = parseInt(qtyInput && qtyInput.value ? qtyInput.value : 1);
+      if (isNaN(qty) || qty <= 0) return showAlert(t('stockError'), 'error');
+      if (product.quantity < qty) return showAlert(t('stockError'), 'error');
+
+      product.quantity -= qty;
+      const marginPerUnit = parseFloat(product.margin || 0);
       const sale = {
         id: Date.now(),
         productId: id,
         productName: product.name,
-        margin: parseFloat(product.margin || 0),
+        marginTotal: marginPerUnit * qty,
+        qty,
         date: new Date().toISOString(),
         type: 'sale',
         undone: false
       };
       sales.push(sale);
+      if (qtyInput) qtyInput.value = 1;
       
       saveProducts();
       saveSales();
-      showAlert(t('saleSuccess') + product.margin + '€', 'success');
+      showAlert(t('saleSuccess') + (marginPerUnit * qty).toFixed(2) + '€', 'success');
     }
 
     function undoSale(id) {
@@ -637,14 +712,16 @@
       }
 
       const lastSale = sales[lastSaleIndex];
-      product.quantity++;
+      const qty = lastSale.qty || 1;
+      product.quantity += qty;
       sales[lastSaleIndex].undone = true; // prevent multiple undo on the same sale
       // Keep original sale in history; add undo entry with negative margin so totals reflect reversal.
       sales.push({
         id: Date.now(),
         productId: id,
         productName: product.name,
-        margin: -Math.abs(parseFloat(lastSale.margin || 0)),
+        marginTotal: -Math.abs(parseFloat(lastSale.marginTotal || 0)),
+        qty,
         date: new Date().toISOString(),
         type: 'undo'
       });
@@ -656,7 +733,7 @@
 
     function resetMargin() {
       if (!confirm(t('resetConfirm'))) return;
-      const totalMargin = sales.reduce((s, sale) => s + parseFloat(sale.margin || 0), 0);
+      const totalMargin = sales.reduce((s, sale) => s + parseFloat(sale.marginTotal || 0), 0);
       marginOffset = totalMargin;
       saveAll().then(() => renderAll());
       showAlert(t('resetSuccess'), 'success');
@@ -664,7 +741,7 @@
 
     function exportHistoryPDF() {
       const list = getFilteredSales();
-      const totalRawMargin = list.reduce((s, sale) => s + parseFloat(sale.margin || 0), 0);
+      const totalRawMargin = list.reduce((s, sale) => s + parseFloat(sale.marginTotal || 0), 0);
       const startEl = document.getElementById('historyStart');
       const endEl = document.getElementById('historyEnd');
       const rangeText = `${startEl && startEl.value ? startEl.value : '...'} → ${endEl && endEl.value ? endEl.value : '...'}`;
@@ -672,9 +749,9 @@
       const rows = list.map(sale => {
         const d = new Date(sale.date);
         const formatted = `${d.toLocaleDateString()} ${d.toLocaleTimeString()}`;
-        const marginVal = parseFloat(sale.margin || 0);
+        const marginVal = parseFloat(sale.marginTotal || 0);
         const typeLabel = sale.type === 'undo' ? t('undoType') : t('sale');
-        const qty = sale.type === 'undo' ? '+1' : '-1';
+        const qty = sale.type === 'undo' ? `+${sale.qty || 1}` : `-${sale.qty || 1}`;
         const marginTxt = `${marginVal.toFixed(2)}€`;
         return `<tr><td>${formatted}</td><td>${sale.productName}</td><td>${qty}</td><td>${typeLabel}</td><td>${marginTxt}</td></tr>`;
       }).join('');
@@ -743,6 +820,7 @@
     function deleteProduct(id) {
       if (!confirm(t('deleteConfirm'))) return;
       products = products.filter(p => p.id !== id);
+      selectedProducts.delete(id);
       saveProducts();
       showAlert(t('deleteSuccess'), 'success');
     }
