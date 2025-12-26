@@ -344,44 +344,6 @@
       }
     };
 
-    // IndexedDB storage wrapper (scalable storage with fallback)
-    const DB = {
-      db: null,
-      init() {
-        return new Promise((resolve, reject) => {
-          const req = indexedDB.open('pharmaScanner', 1);
-          req.onupgradeneeded = (e) => {
-            const db = e.target.result;
-            if (!db.objectStoreNames.contains('kv')) {
-              db.createObjectStore('kv', { keyPath: 'key' });
-            }
-          };
-          req.onsuccess = () => { DB.db = req.result; resolve(); };
-          req.onerror = () => { reject(req.error); };
-        });
-      },
-      get(key) {
-        return new Promise((resolve) => {
-          if (!DB.db) return resolve(null);
-          const tx = DB.db.transaction(['kv'], 'readonly');
-          const store = tx.objectStore('kv');
-          const req = store.get(key);
-          req.onsuccess = () => resolve(req.result ? req.result.value : null);
-          req.onerror = () => resolve(null);
-        });
-      },
-      set(key, value) {
-        return new Promise((resolve, reject) => {
-          if (!DB.db) return reject(new Error('db not ready'));
-          const tx = DB.db.transaction(['kv'], 'readwrite');
-          const store = tx.objectStore('kv');
-          const req = store.put({ key, value });
-          req.onsuccess = () => resolve();
-          req.onerror = () => reject(req.error);
-        });
-      }
-    };
-
     // File System Access API storage (stores everything in pharma-data.json in selected folder)
     const FileStore = {
       supported: 'showDirectoryPicker' in window,
@@ -409,27 +371,10 @@
 
     async function migrateFromLocalStorageIfNeeded() {
       try {
-        const hasProducts = await DB.get('products');
-        const lsProductsStr = localStorage.getItem('pharmaProducts');
-        if (!hasProducts && lsProductsStr) {
-          const lsProducts = JSON.parse(lsProductsStr);
-          await DB.set('products', lsProducts);
-          localStorage.removeItem('pharmaProducts');
-        }
-        const hasSales = await DB.get('sales');
-        const lsSalesStr = localStorage.getItem('pharmaSales');
-        if (!hasSales && lsSalesStr) {
-          const lsSales = JSON.parse(lsSalesStr);
-          await DB.set('sales', lsSales);
-          localStorage.removeItem('pharmaSales');
-        }
-        const hasOffset = await DB.get('marginOffset');
-        const lsOffsetStr = localStorage.getItem('pharmaMarginOffset');
-        if (hasOffset == null && lsOffsetStr != null) {
-          await DB.set('marginOffset', parseFloat(lsOffsetStr) || 0);
-          localStorage.removeItem('pharmaMarginOffset');
-        }
-      } catch (e) { /* ignore */ }
+        localStorage.removeItem('pharmaProducts');
+        localStorage.removeItem('pharmaSales');
+        localStorage.removeItem('pharmaMarginOffset');
+      } catch (e) {}
     }
 
     function t(key) {
@@ -501,7 +446,7 @@
     }
 
     async function loadProducts() {
-      if (useFileStore && FileStore.supported && fileHandle) {
+      if (useFileStore && FileStore.supported && dirHandle) {
         try {
           const txt = await FileStore.load();
           unpackState(txt);
@@ -509,30 +454,21 @@
           return;
         } catch (e) { showAlert('Erreur de lecture fichier: ' + e.message, 'error'); }
       }
-      try {
-        const p = await DB.get('products');
-        products = Array.isArray(p) ? p : [];
-      } catch (e) { products = []; }
-      try {
-        const s = await DB.get('sales');
-        sales = Array.isArray(s) ? s : [];
-      } catch (e) { sales = []; }
-      try {
-        const m = await DB.get('marginOffset');
-        marginOffset = parseFloat(m || 0) || 0;
-      } catch (e) { marginOffset = 0; }
+      // File storage is mandatory; if no folder selected, show empty state
+      products = [];
+      sales = [];
+      marginOffset = 0;
       renderAll();
     }
 
     async function saveAll() {
-      const payload = packState();
-      if (useFileStore && FileStore.supported && fileHandle) {
-        try { await FileStore.save(payload); return; }
-        catch (e) { showAlert('Sauvegarde fichier: ' + e.message, 'error'); }
+      if (!useFileStore || !dirHandle) {
+        showAlert('Dossier non sélectionné. Les données ne seront pas sauvegardées.', 'error');
+        return;
       }
-      // Fallback IndexedDB then localStorage
-      try { await DB.set('products', products); await DB.set('sales', sales); await DB.set('marginOffset', marginOffset); }
-      catch (e) { try { localStorage.setItem('pharmaProducts', JSON.stringify(products)); localStorage.setItem('pharmaSales', JSON.stringify(sales)); localStorage.setItem('pharmaMarginOffset', marginOffset); } catch (err) {} }
+      const payload = packState();
+      try { await FileStore.save(payload); }
+      catch (e) { showAlert('Erreur sauvegarde fichier: ' + e.message, 'error'); }
     }
 
     function saveProducts() { saveAll().then(renderAll); }
@@ -914,11 +850,10 @@
 
     window.addEventListener('DOMContentLoaded', () => {
       (async () => {
-        try { await DB.init(); } catch (e) {}
         await migrateFromLocalStorageIfNeeded();
         if (FileStore.supported) {
-          const preferFile = confirm('Utiliser un fichier local pour stocker les données ? (recommandé pour gros volumes)');
-          if (preferFile) {
+          const needsFolder = confirm('Sélectionner un dossier pour stocker les données ? (obligatoire)');
+          if (needsFolder) {
             try { await selectDataFile(); } catch (e) {}
           }
         }
