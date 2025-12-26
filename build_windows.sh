@@ -6,5 +6,5 @@ if ! command -v go >/dev/null 2>&1; then
   echo "Install Go: https://go.dev/dl/"
   exit 1
 fi
-GOOS=windows GOARCH=amd64 go build -o PharmaScanner.exe ./server/main.go
+GOOS=windows GOARCH=amd64 go build -ldflags "-H=windowsgui" -o PharmaScanner.exe ./server/main.go
 echo "Built PharmaScanner.exe in $(pwd)"

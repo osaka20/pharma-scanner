@@ -423,7 +423,8 @@
       return JSON.stringify({
         v: 2,
         p: products.map(p => ({ i: p.id, n: p.name, b: p.brand, c: p.code, bp: p.purchasePrice, sp: p.salePrice, m: p.margin, q: p.quantity, no: p.notes })),
-        s: sales.map(s => [s.date, s.productId, s.margin, s.type === 'undo' ? 'u' : 's']),
+        // sales tuple: [date, productId, margin, typeCode, undoneFlag]
+        s: sales.map(s => [s.date, s.productId, s.margin, s.type === 'undo' ? 'u' : 's', s.undone ? 1 : 0]),
         o: marginOffset
       });
     }
@@ -447,6 +448,7 @@
           productId: s[1],
           margin: s[2],
           type: s[3] === 'u' ? 'undo' : 'sale',
+          undone: !!s[4],
           productName: ''
         })) : [];
         marginOffset = parseFloat(data.o || 0) || 0;
@@ -576,7 +578,7 @@
       });
       
       document.getElementById('productsList').innerHTML = filtered.length ? filtered.map(p => {
-        const lastSale = sales.filter(s => s.productId === p.id).pop();
+        const hasUndoableSale = sales.some(s => s.productId === p.id && s.type === 'sale' && !s.undone);
         return `
         <tr><td>${p.name}</td><td>${p.brand}</td><td>${parseFloat(p.purchasePrice || 0).toFixed(2)}€</td>
         <td>${parseFloat(p.salePrice || 0).toFixed(2)}€</td>
@@ -584,7 +586,7 @@
         <td>${p.quantity || 0}</td>
         <td class="actions">
           <button class="sale-btn" onclick="sellProduct(${p.id})" ${p.quantity <= 0 ? 'disabled' : ''}>${t('sell')}</button>
-          <button class="undo-btn" onclick="undoSale(${p.id})" ${!lastSale ? 'disabled' : ''}>${t('undo')}</button>
+          <button class="undo-btn" onclick="undoSale(${p.id})" ${!hasUndoableSale ? 'disabled' : ''}>${t('undo')}</button>
           <button class="btn btn-secondary" onclick="editProduct(${p.id})">${t('edit')}</button>
           <button class="btn btn-danger" onclick="deleteProduct(${p.id})">${t('delete')}</button>
         </td></tr>
@@ -609,7 +611,8 @@
         productName: product.name,
         margin: parseFloat(product.margin || 0),
         date: new Date().toISOString(),
-        type: 'sale'
+        type: 'sale',
+        undone: false
       };
       sales.push(sale);
       
@@ -622,13 +625,20 @@
       const product = products.find(p => p.id === id);
       if (!product) return;
       
-      const lastSaleIndex = sales.map((s, i) => s.productId === id && s.type === 'sale' ? i : -1).filter(i => i !== -1).pop();
-      if (lastSaleIndex === undefined) {
+      const lastSaleIndex = (() => {
+        for (let i = sales.length - 1; i >= 0; i--) {
+          const s = sales[i];
+          if (s.productId === id && s.type === 'sale' && !s.undone) return i;
+        }
+        return -1;
+      })();
+      if (lastSaleIndex === -1) {
         return showAlert(t('noSaleToUndo'), 'error');
       }
-      
+
       const lastSale = sales[lastSaleIndex];
       product.quantity++;
+      sales[lastSaleIndex].undone = true; // prevent multiple undo on the same sale
       // Keep original sale in history; add undo entry with negative margin so totals reflect reversal.
       sales.push({
         id: Date.now(),

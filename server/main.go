@@ -6,9 +6,12 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"os/exec"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
+	"time"
 )
 
 type State struct {
@@ -66,5 +69,31 @@ func main() {
 	addr := ":8080"
 	fmt.Println("Pharma Scanner server running on http://localhost" + addr)
 	fmt.Println("Data file:", dataPath)
+	go func() {
+		// Give server a brief moment to start, then open the default browser.
+		time.Sleep(400 * time.Millisecond)
+		_ = openBrowser("http://localhost" + addr)
+	}()
 	log.Fatal(http.ListenAndServe(addr, nil))
+}
+
+// openBrowser tries to launch the default browser on each platform.
+func openBrowser(url string) error {
+	cmds := [][]string{}
+	switch os := runtime.GOOS; os {
+	case "windows":
+		cmds = append(cmds, []string{"rundll32", "url.dll,FileProtocolHandler", url})
+	case "darwin":
+		cmds = append(cmds, []string{"open", url})
+	default:
+		cmds = append(cmds, []string{"xdg-open", url})
+	}
+
+	for _, c := range cmds {
+		cmd := exec.Command(c[0], c[1:]...)
+		if err := cmd.Start(); err == nil {
+			return nil
+		}
+	}
+	return fmt.Errorf("unable to open browser")
 }
