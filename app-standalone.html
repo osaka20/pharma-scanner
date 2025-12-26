@@ -192,6 +192,7 @@
     let currentEditId = null;
     let language = localStorage.getItem('lang') || 'en';
     let marginOffset = parseFloat(localStorage.getItem('pharmaMarginOffset') || 0);
+    let useServerStore = true; // Prefer server-based file store
     let dirHandle = null;
     let useFileStore = false;
 
@@ -344,41 +345,16 @@
       }
     };
 
-    // Minimal IndexedDB for storing folder handle reference only (not data)
-    const HandleStore = {
-      db: null,
-      async init() {
-        return new Promise((resolve) => {
-          const req = indexedDB.open('pharmaHandles', 1);
-          req.onupgradeneeded = (e) => {
-            const db = e.target.result;
-            if (!db.objectStoreNames.contains('handles')) {
-              db.createObjectStore('handles', { keyPath: 'key' });
-            }
-          };
-          req.onsuccess = () => { HandleStore.db = req.result; resolve(); };
-          req.onerror = () => resolve();
-        });
+    // Server-based storage wrapper (reads/writes pharma-data.json via HTTP)
+    const ServerStore = {
+      async load() {
+        const res = await fetch('/data');
+        if (!res.ok) throw new Error('load failed');
+        return await res.text();
       },
-      async saveHandle(handle) {
-        return new Promise((resolve) => {
-          if (!HandleStore.db) return resolve(false);
-          const tx = HandleStore.db.transaction(['handles'], 'readwrite');
-          const store = tx.objectStore('handles');
-          store.put({ key: 'dirHandle', handle });
-          tx.oncomplete = () => resolve(true);
-          tx.onerror = () => resolve(false);
-        });
-      },
-      async getHandle() {
-        return new Promise((resolve) => {
-          if (!HandleStore.db) return resolve(null);
-          const tx = HandleStore.db.transaction(['handles'], 'readonly');
-          const store = tx.objectStore('handles');
-          const req = store.get('dirHandle');
-          req.onsuccess = () => resolve(req.result ? req.result.handle : null);
-          req.onerror = () => resolve(null);
-        });
+      async save(text) {
+        const res = await fetch('/data', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: text });
+        if (!res.ok && res.status !== 204) throw new Error('save failed');
       }
     };
 
@@ -486,6 +462,14 @@
     }
 
     async function loadProducts() {
+      if (useServerStore) {
+        try {
+          const txt = await ServerStore.load();
+          unpackState(txt);
+          renderAll();
+          return;
+        } catch (e) { /* server not available; fallback below */ }
+      }
       if (useFileStore && FileStore.supported && dirHandle) {
         try {
           const txt = await FileStore.load();
@@ -502,13 +486,16 @@
     }
 
     async function saveAll() {
-      if (!useFileStore || !dirHandle) {
-        showAlert('Dossier non sélectionné. Les données ne seront pas sauvegardées.', 'error');
-        return;
-      }
       const payload = packState();
-      try { await FileStore.save(payload); }
-      catch (e) { showAlert('Erreur sauvegarde fichier: ' + e.message, 'error'); }
+      if (useServerStore) {
+        try { await ServerStore.save(payload); return; }
+        catch (e) { /* try file store */ }
+      }
+      if (useFileStore && dirHandle) {
+        try { await FileStore.save(payload); return; }
+        catch (e) { showAlert('Erreur sauvegarde fichier: ' + e.message, 'error'); return; }
+      }
+      showAlert('Aucun stockage configuré. Ouvrez Backup et choisissez un dossier.', 'error');
     }
 
     function saveProducts() { saveAll().then(renderAll); }
@@ -890,37 +877,6 @@
 
     window.addEventListener('DOMContentLoaded', () => {
       (async () => {
-        // Initialize handle storage
-        await HandleStore.init();
-        
-        // Try to restore saved folder handle
-        const savedHandle = await HandleStore.getHandle();
-        if (savedHandle) {
-          try {
-            dirHandle = savedHandle;
-            useFileStore = true;
-            // Verify permissions are still valid
-            const perm = await dirHandle.queryPermission({ mode: 'readwrite' });
-            if (perm !== 'granted') {
-              await dirHandle.requestPermission({ mode: 'readwrite' });
-            }
-          } catch (e) {
-            // Handle is stale; reset and ask again
-            dirHandle = null;
-            useFileStore = false;
-          }
-        }
-        
-        await migrateFromLocalStorageIfNeeded();
-        
-        // If no valid handle, ask user to select folder
-        if (!useFileStore && FileStore.supported) {
-          const needsFolder = confirm('Sélectionner un dossier pour stocker les données ? (obligatoire)');
-          if (needsFolder) {
-            try { await selectDataFile(); } catch (e) {}
-          }
-        }
-        
         document.getElementById('langSelect').value = language;
         applyTranslations();
         await loadProducts();
