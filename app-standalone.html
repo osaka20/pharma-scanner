@@ -112,8 +112,7 @@
           <label style="font-size:12px; color:#555;">
             <input type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAll(this.checked)"> <span data-translate="selectAll">Select all</span>
           </label>
-          <input type="number" id="bulkQty" min="0" step="1" style="width:110px; padding:0.35rem; border:1px solid #ccc; border-radius:4px;" data-translate-placeholder="bulkQtyPlaceholder" placeholder="Quantity">
-          <button class="btn btn-secondary" onclick="bulkSetQuantity()" data-translate="bulkSetQty">Set quantity for selected</button>
+          <button class="btn btn-secondary" onclick="openBulkQtyModal()" data-translate="bulkSetQty">Set quantity for selected</button>
           <button class="btn btn-danger" onclick="bulkDelete()" data-translate="bulkDelete">Delete selected</button>
         </div>
         <div class="table-container">
@@ -170,6 +169,24 @@
           <button class="btn btn-secondary" onclick="createDataFile()" data-translate="createFile">Créer un fichier</button>
           <div id="fileStatus" style="font-size:12px; color:#555;">-</div>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="bulkQtyModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header" data-translate="bulkSetQty">Set quantity for selected</div>
+      <div style="margin-bottom: 1rem;">
+        <p style="margin-bottom: 0.5rem; font-weight: 500;"><span id="bulkSelectedCount">0</span> <span data-translate="productsSelected">products selected</span></p>
+        <div id="bulkSelectedList" style="max-height: 150px; overflow-y: auto; background: #f9f9f9; padding: 0.5rem; border-radius: 4px; font-size: 13px;"></div>
+      </div>
+      <div class="form-group">
+        <label data-translate="bulkQtyLabel">New quantity for all selected products</label>
+        <input type="number" id="bulkQtyInput" min="0" step="1" value="0" style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 4px;">
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeBulkQtyModal()" data-translate="cancel">Cancel</button>
+        <button type="button" class="btn btn-primary" onclick="confirmBulkSetQuantity()" data-translate="confirm">Confirm</button>
       </div>
     </div>
   </div>
@@ -283,7 +300,11 @@
         bulkDelete: 'Delete selected',
         bulkQtyPlaceholder: 'Quantity',
         selectAll: 'Select all',
-        selectionNone: 'No product selected'
+        selectionNone: 'No product selected',
+        productsSelected: 'products selected',
+        bulkQtyLabel: 'New quantity for all selected products',
+        confirm: 'Confirm',
+        bulkQtyConfirm: 'Set quantity to {{qty}} for {{count}} products?'
       },
       ar: {
         appTitle: 'Pharma Scanner',
@@ -362,7 +383,11 @@
         bulkDelete: 'حذف العناصر المحددة',
         bulkQtyPlaceholder: 'الكمية',
         selectAll: 'تحديد الكل',
-        selectionNone: 'لا يوجد منتج محدد'
+        selectionNone: 'لا يوجد منتج محدد',
+        productsSelected: 'منتج محدد',
+        bulkQtyLabel: 'الكمية الجديدة لجميع المنتجات المحددة',
+        confirm: 'تأكيد',
+        bulkQtyConfirm: 'تعيين الكمية إلى {{qty}} لـ {{count}} منتج؟'
       }
     };
 
@@ -651,12 +676,29 @@
       showAlert(t('deleteSuccess'), 'success');
     }
 
-    function bulkSetQuantity() {
+    function openBulkQtyModal() {
       if (selectedProducts.size === 0) return showAlert(t('selectionNone'), 'error');
-      const input = document.getElementById('bulkQty');
-      const qty = parseInt(input && input.value ? input.value : 0);
+      const selectedList = products.filter(p => selectedProducts.has(p.id));
+      document.getElementById('bulkSelectedCount').textContent = selectedList.length;
+      document.getElementById('bulkSelectedList').innerHTML = selectedList.map(p => 
+        `<div style="padding: 0.25rem 0; border-bottom: 1px solid #ddd;">${p.name} - ${p.brand} (${t('quantity')}: ${p.quantity})</div>`
+      ).join('');
+      document.getElementById('bulkQtyInput').value = 0;
+      document.getElementById('bulkQtyModal').classList.add('active');
+    }
+
+    function closeBulkQtyModal() {
+      document.getElementById('bulkQtyModal').classList.remove('active');
+    }
+
+    function confirmBulkSetQuantity() {
+      const qty = parseInt(document.getElementById('bulkQtyInput').value || 0);
       if (isNaN(qty) || qty < 0) return showAlert(t('stockError'), 'error');
+      const confirmMsg = t('bulkQtyConfirm').replace('{{qty}}', qty).replace('{{count}}', selectedProducts.size);
+      if (!confirm(confirmMsg)) return;
       products = products.map(p => selectedProducts.has(p.id) ? { ...p, quantity: qty } : p);
+      selectedProducts.clear();
+      closeBulkQtyModal();
       saveProducts();
       showAlert(t('saveSuccess'), 'success');
     }
