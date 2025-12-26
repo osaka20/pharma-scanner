@@ -145,15 +145,22 @@
       <div id="export" class="page">
         <h2 data-translate="backupTitle">Backup & Restore</h2>
         <div class="grid-2">
-          <div style="background: #f9f9f9; padding: 2rem; border-radius: 8px; text-align: center;">
-            <h3 data-translate="exportTitle">Export</h3><p style="margin-bottom: 1rem; color: #666;" data-translate="exportDesc">Download JSON backup</p>
+          <div style="background: #f9f9f9; padding: 2rem; border-radius: 8px; text-align: center; display:flex; flex-direction:column; gap:0.5rem;">
+            <h3 data-translate="exportTitle">Export</h3><p style="margin-bottom: 0.5rem; color: #666;" data-translate="exportDesc">Download JSON backup</p>
             <button class="btn btn-success" onclick="exportData()" data-translate="exportBtn">Export to JSON</button>
+            <div style="font-size:12px; color:#666;">Format compact (.json)</div>
           </div>
-          <div style="background: #f9f9f9; padding: 2rem; border-radius: 8px; text-align: center;">
-            <h3 data-translate="importTitle">Import</h3><p style="margin-bottom: 1rem; color: #666;" data-translate="importDesc">Restore previous backup</p>
+          <div style="background: #f9f9f9; padding: 2rem; border-radius: 8px; text-align: center; display:flex; flex-direction:column; gap:0.5rem;">
+            <h3 data-translate="importTitle">Import</h3><p style="margin-bottom: 0.5rem; color: #666;" data-translate="importDesc">Restore previous backup</p>
             <input type="file" id="importFile" accept=".json" style="display: none;" onchange="handleImport()">
             <button class="btn btn-primary" onclick="document.getElementById('importFile').click()" data-translate="importBtn">Import File</button>
           </div>
+        </div>
+        <div style="margin-top:1.5rem; background:#f5f5f5; padding:1rem; border-radius:8px; display:flex; flex-wrap:wrap; gap:0.5rem; align-items:center;">
+          <div style="font-weight:600;" data-translate="fileStorage">Stockage fichier local</div>
+          <button class="btn btn-primary" onclick="selectDataFile()" data-translate="selectFile">Choisir un fichier</button>
+          <button class="btn btn-secondary" onclick="createDataFile()" data-translate="createFile">Créer un fichier</button>
+          <div id="fileStatus" style="font-size:12px; color:#555;">-</div>
         </div>
       </div>
     </div>
@@ -185,6 +192,8 @@
     let currentEditId = null;
     let language = localStorage.getItem('lang') || 'en';
     let marginOffset = parseFloat(localStorage.getItem('pharmaMarginOffset') || 0);
+    let dirHandle = null;
+    let useFileStore = false;
 
     const translations = {
       en: {
@@ -225,6 +234,9 @@
         exportTitle: 'Export',
         exportDesc: 'Download JSON backup',
         exportBtn: 'Export to JSON',
+        fileStorage: 'Local file storage',
+        selectFile: 'Choose file',
+        createFile: 'Create file',
         exportPdf: 'Export PDF',
         importTitle: 'Import',
         importDesc: 'Restore previous backup',
@@ -295,6 +307,9 @@
         exportTitle: 'تصدير',
         exportDesc: 'تنزيل نسخة احتياطية JSON',
         exportBtn: 'تصدير إلى JSON',
+        fileStorage: 'تخزين محلي في ملف',
+        selectFile: 'اختر ملفاً',
+        createFile: 'أنشئ ملفاً',
         exportPdf: 'تصدير PDF',
         importTitle: 'استيراد',
         importDesc: 'استعادة نسخة احتياطية سابقة',
@@ -367,6 +382,31 @@
       }
     };
 
+    // File System Access API storage (stores everything in pharma-data.json in selected folder)
+    const FileStore = {
+      supported: 'showDirectoryPicker' in window,
+      async selectFolder() {
+        const handle = await window.showDirectoryPicker();
+        dirHandle = handle;
+        useFileStore = true;
+      },
+      async getFileHandle() {
+        if (!dirHandle) throw new Error('No folder selected');
+        return await dirHandle.getFileHandle('pharma-data.json', { create: true });
+      },
+      async save(text) {
+        const fileHandle = await this.getFileHandle();
+        const writable = await fileHandle.createWritable();
+        await writable.write(text);
+        await writable.close();
+      },
+      async load() {
+        const fileHandle = await this.getFileHandle();
+        const file = await fileHandle.getFile();
+        return await file.text();
+      }
+    };
+
     async function migrateFromLocalStorageIfNeeded() {
       try {
         const hasProducts = await DB.get('products');
@@ -418,37 +458,85 @@
       renderAll();
     }
 
+    function packState() {
+      return JSON.stringify({
+        v: 2,
+        p: products.map(p => ({ i: p.id, n: p.name, b: p.brand, c: p.code, bp: p.purchasePrice, sp: p.salePrice, m: p.margin, q: p.quantity, no: p.notes })),
+        s: sales.map(s => [s.date, s.productId, s.margin, s.type === 'undo' ? 'u' : 's']),
+        o: marginOffset
+      });
+    }
+
+    function unpackState(text) {
+      const data = JSON.parse(text);
+      if (data.v === 2) {
+        products = Array.isArray(data.p) ? data.p.map(p => ({
+          id: p.i,
+          name: p.n,
+          brand: p.b,
+          code: p.c,
+          purchasePrice: p.bp,
+          salePrice: p.sp,
+          margin: p.m,
+          quantity: p.q,
+          notes: p.no || ''
+        })) : [];
+        sales = Array.isArray(data.s) ? data.s.map(s => ({
+          date: s[0],
+          productId: s[1],
+          margin: s[2],
+          type: s[3] === 'u' ? 'undo' : 'sale',
+          productName: ''
+        })) : [];
+        marginOffset = parseFloat(data.o || 0) || 0;
+      } else {
+        // backward compatibility
+        products = Array.isArray(data.products) ? data.products : [];
+        sales = Array.isArray(data.sales) ? data.sales : [];
+        marginOffset = parseFloat(data.marginOffset || 0) || 0;
+      }
+      // reattach product names for rendering
+      const names = new Map(products.map(p => [p.id, p.name]));
+      sales = sales.map(s => ({ ...s, productName: s.productName || names.get(s.productId) || '(deleted)' }));
+    }
+
     async function loadProducts() {
+      if (useFileStore && FileStore.supported && fileHandle) {
+        try {
+          const txt = await FileStore.load();
+          unpackState(txt);
+          renderAll();
+          return;
+        } catch (e) { showAlert('Erreur de lecture fichier: ' + e.message, 'error'); }
+      }
       try {
         const p = await DB.get('products');
         products = Array.isArray(p) ? p : [];
-      } catch (e) {
-        products = [];
-      }
+      } catch (e) { products = []; }
       try {
         const s = await DB.get('sales');
         sales = Array.isArray(s) ? s : [];
-      } catch (e) {
-        sales = [];
-      }
+      } catch (e) { sales = []; }
       try {
         const m = await DB.get('marginOffset');
         marginOffset = parseFloat(m || 0) || 0;
-      } catch (e) {
-        marginOffset = 0;
-      }
+      } catch (e) { marginOffset = 0; }
       renderAll();
     }
 
-    function saveProducts() {
-      DB.set('products', products)
-        .then(() => renderAll())
-        .catch(() => { try { localStorage.setItem('pharmaProducts', JSON.stringify(products)); } catch (e) {} renderAll(); });
+    async function saveAll() {
+      const payload = packState();
+      if (useFileStore && FileStore.supported && fileHandle) {
+        try { await FileStore.save(payload); return; }
+        catch (e) { showAlert('Sauvegarde fichier: ' + e.message, 'error'); }
+      }
+      // Fallback IndexedDB then localStorage
+      try { await DB.set('products', products); await DB.set('sales', sales); await DB.set('marginOffset', marginOffset); }
+      catch (e) { try { localStorage.setItem('pharmaProducts', JSON.stringify(products)); localStorage.setItem('pharmaSales', JSON.stringify(sales)); localStorage.setItem('pharmaMarginOffset', marginOffset); } catch (err) {} }
     }
 
-    function saveSales() {
-      DB.set('sales', sales).catch(() => { try { localStorage.setItem('pharmaSales', JSON.stringify(sales)); } catch (e) {} });
-    }
+    function saveProducts() { saveAll().then(renderAll); }
+    function saveSales() { saveAll(); }
 
     function renderDashboard() {
       const total = products.length;
@@ -597,8 +685,7 @@
       if (!confirm(t('resetConfirm'))) return;
       const totalMargin = sales.reduce((s, sale) => s + parseFloat(sale.margin || 0), 0);
       marginOffset = totalMargin;
-      DB.set('marginOffset', marginOffset).catch(() => { try { localStorage.setItem('pharmaMarginOffset', marginOffset); } catch (e) {} });
-      renderAll();
+      saveAll().then(() => renderAll());
       showAlert(t('resetSuccess'), 'success');
     }
 
@@ -619,8 +706,7 @@
         return `<tr><td>${formatted}</td><td>${sale.productName}</td><td>${qty}</td><td>${typeLabel}</td><td>${marginTxt}</td></tr>`;
       }).join('');
 
-      const win = window.open('', '_blank');
-      win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>History PDF</title>
+      const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>History PDF</title>
         <style>
           body { font-family: Arial, sans-serif; padding: 20px; }
           h2 { margin-bottom: 0.2rem; }
@@ -637,10 +723,24 @@
           <thead><tr><th>${t('saleDate')}</th><th>${t('saleProduct')}</th><th>${t('saleQuantity')}</th><th>${t('saleType')}</th><th>${t('saleMargin')}</th></tr></thead>
           <tbody>${rows || `<tr><td colspan="5">${t('noSales')}</td></tr>`}</tbody>
         </table>
-      </body></html>`);
-      win.document.close();
-      win.focus();
-      win.print();
+      </body></html>`;
+
+      // Reuse file save when a data folder is selected; otherwise open print window.
+      if (useFileStore && FileStore.supported && dirHandle && dirHandle.name) {
+        const blob = new Blob([html], { type: 'text/html' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `history-${new Date().toISOString().split('T')[0]}.html`;
+        a.click();
+        URL.revokeObjectURL(url);
+      } else {
+        const win = window.open('', '_blank');
+        win.document.write(html);
+        win.document.close();
+        win.focus();
+        win.print();
+      }
     }
 
     function openAddForm() {
@@ -727,8 +827,8 @@
     }
 
     function exportData() {
-      const data = { version: 1, exportDate: new Date().toISOString(), products, sales };
-      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const data = packState();
+      const blob = new Blob([data], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
@@ -750,11 +850,9 @@
       const reader = new FileReader();
       reader.onload = (e) => {
         try {
-          const data = JSON.parse(e.target.result);
-          products = data.products || [];
-          sales = data.sales || [];
-          saveProducts();
-          saveSales();
+          unpackState(e.target.result);
+          saveAll();
+          renderAll();
           showAlert(t('importSuccess'), 'success');
           document.getElementById('importFile').value = '';
         } catch (error) {
@@ -771,6 +869,42 @@
       setTimeout(() => alert.classList.remove('show'), 3000);
     }
 
+    async function selectDataFile() {
+      if (!FileStore.supported) return showAlert('File System Access non supporté par ce navigateur', 'error');
+      try {
+        await FileStore.selectFolder();
+        const txt = await FileStore.load();
+        unpackState(txt);
+        renderAll();
+        updateFileStatus();
+        showAlert('Dossier sélectionné, données chargées', 'success');
+      } catch (e) { 
+        if (e.name !== 'AbortError') showAlert('Erreur: ' + e.message, 'error');
+      }
+    }
+
+    async function createDataFile() {
+      if (!FileStore.supported) return showAlert('File System Access non supporté par ce navigateur', 'error');
+      try {
+        await FileStore.selectFolder();
+        await saveAll();
+        updateFileStatus();
+        showAlert('Dossier sélectionné, fichier créé', 'success');
+      } catch (e) { 
+        if (e.name !== 'AbortError') showAlert('Erreur: ' + e.message, 'error');
+      }
+    }
+
+    function updateFileStatus() {
+      const el = document.getElementById('fileStatus');
+      if (!el) return;
+      if (useFileStore && dirHandle && dirHandle.name) {
+        el.textContent = `Dossier: ${dirHandle.name}`;
+      } else {
+        el.textContent = 'Aucun dossier sélectionné';
+      }
+    }
+
     function changePage(page, button) {
       document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
       document.getElementById(page).classList.add('active');
@@ -782,9 +916,16 @@
       (async () => {
         try { await DB.init(); } catch (e) {}
         await migrateFromLocalStorageIfNeeded();
+        if (FileStore.supported) {
+          const preferFile = confirm('Utiliser un fichier local pour stocker les données ? (recommandé pour gros volumes)');
+          if (preferFile) {
+            try { await selectDataFile(); } catch (e) {}
+          }
+        }
         document.getElementById('langSelect').value = language;
         applyTranslations();
         await loadProducts();
+        updateFileStatus();
       })();
     });
   </script>
