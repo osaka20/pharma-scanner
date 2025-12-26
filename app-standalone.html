@@ -344,6 +344,44 @@
       }
     };
 
+    // Minimal IndexedDB for storing folder handle reference only (not data)
+    const HandleStore = {
+      db: null,
+      async init() {
+        return new Promise((resolve) => {
+          const req = indexedDB.open('pharmaHandles', 1);
+          req.onupgradeneeded = (e) => {
+            const db = e.target.result;
+            if (!db.objectStoreNames.contains('handles')) {
+              db.createObjectStore('handles', { keyPath: 'key' });
+            }
+          };
+          req.onsuccess = () => { HandleStore.db = req.result; resolve(); };
+          req.onerror = () => resolve();
+        });
+      },
+      async saveHandle(handle) {
+        return new Promise((resolve) => {
+          if (!HandleStore.db) return resolve(false);
+          const tx = HandleStore.db.transaction(['handles'], 'readwrite');
+          const store = tx.objectStore('handles');
+          store.put({ key: 'dirHandle', handle });
+          tx.oncomplete = () => resolve(true);
+          tx.onerror = () => resolve(false);
+        });
+      },
+      async getHandle() {
+        return new Promise((resolve) => {
+          if (!HandleStore.db) return resolve(null);
+          const tx = HandleStore.db.transaction(['handles'], 'readonly');
+          const store = tx.objectStore('handles');
+          const req = store.get('dirHandle');
+          req.onsuccess = () => resolve(req.result ? req.result.handle : null);
+          req.onerror = () => resolve(null);
+        });
+      }
+    };
+
     // File System Access API storage (stores everything in pharma-data.json in selected folder)
     const FileStore = {
       supported: 'showDirectoryPicker' in window,
@@ -351,6 +389,8 @@
         const handle = await window.showDirectoryPicker();
         dirHandle = handle;
         useFileStore = true;
+        // Persist the handle for future auto-load
+        await HandleStore.saveHandle(handle);
       },
       async getFileHandle() {
         if (!dirHandle) throw new Error('No folder selected');
@@ -850,13 +890,37 @@
 
     window.addEventListener('DOMContentLoaded', () => {
       (async () => {
+        // Initialize handle storage
+        await HandleStore.init();
+        
+        // Try to restore saved folder handle
+        const savedHandle = await HandleStore.getHandle();
+        if (savedHandle) {
+          try {
+            dirHandle = savedHandle;
+            useFileStore = true;
+            // Verify permissions are still valid
+            const perm = await dirHandle.queryPermission({ mode: 'readwrite' });
+            if (perm !== 'granted') {
+              await dirHandle.requestPermission({ mode: 'readwrite' });
+            }
+          } catch (e) {
+            // Handle is stale; reset and ask again
+            dirHandle = null;
+            useFileStore = false;
+          }
+        }
+        
         await migrateFromLocalStorageIfNeeded();
-        if (FileStore.supported) {
+        
+        // If no valid handle, ask user to select folder
+        if (!useFileStore && FileStore.supported) {
           const needsFolder = confirm('Sélectionner un dossier pour stocker les données ? (obligatoire)');
           if (needsFolder) {
             try { await selectDataFile(); } catch (e) {}
           }
         }
+        
         document.getElementById('langSelect').value = language;
         applyTranslations();
         await loadProducts();
