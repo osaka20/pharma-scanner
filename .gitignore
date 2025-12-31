@@ -2,6 +2,9 @@
 # Pharma Scanner - .gitignore
 # ═══════════════════════════════════════════
 
+# Data files (user-generated content)
+pharma-data.json
+
 # Logs
 logs
 *.log
