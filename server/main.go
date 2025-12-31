@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"net"
 	"net/http"
 	"os/exec"
 	"os"
@@ -25,6 +26,14 @@ func main() {
 	cwd, err := os.Getwd()
 	if err != nil { log.Fatal(err) }
 	dataPath := filepath.Join(cwd, "pharma-data.json")
+	addr := ":8080"
+
+	// Check if port is already in use (server already running)
+	if isPortInUse(addr) {
+		// Server already running, just open browser
+		_ = openBrowser("http://localhost" + addr)
+		return
+	}
 
 	fs := http.FileServer(http.Dir(cwd))
 	http.HandleFunc("/data", func(w http.ResponseWriter, r *http.Request) {
@@ -66,7 +75,6 @@ func main() {
 		fs.ServeHTTP(w, r)
 	})
 
-	addr := ":8080"
 	fmt.Println("Pharma Scanner server running on http://localhost" + addr)
 	fmt.Println("Data file:", dataPath)
 	go func() {
@@ -75,6 +83,16 @@ func main() {
 		_ = openBrowser("http://localhost" + addr)
 	}()
 	log.Fatal(http.ListenAndServe(addr, nil))
+}
+
+// isPortInUse checks if a TCP port is already in use
+func isPortInUse(addr string) bool {
+	ln, err := net.Listen("tcp", addr)
+	if err != nil {
+		return true // Port is in use
+	}
+	ln.Close()
+	return false
 }
 
 // openBrowser tries to launch the default browser on each platform.
