@@ -8,12 +8,13 @@ import (
 	"log"
 	"net"
 	"net/http"
-	"os/exec"
 	"os"
 	"path/filepath"
 	"runtime"
 	"strings"
+	"syscall"
 	"time"
+	"unsafe"
 )
 
 // Embarque les fichiers statiques dans le binaire
@@ -104,25 +105,54 @@ func isPortInUse(addr string) bool {
 	return false
 }
 
-// openBrowser tries to launch the default browser on each platform.
+// openBrowser utilise l'API Windows native au lieu de exec.Command
 func openBrowser(url string) error {
-	cmds := [][]string{}
-	switch os := runtime.GOOS; os {
-	case "windows":
-		cmds = append(cmds, []string{"rundll32", "url.dll,FileProtocolHandler", url})
-	case "darwin":
-		cmds = append(cmds, []string{"open", url})
-	default:
-		cmds = append(cmds, []string{"xdg-open", url})
+	if runtime.GOOS == "windows" {
+		// Utiliser ShellExecuteW (API Windows native) au lieu de rundll32/cmd
+		return shellExecute(url)
 	}
+	// Pour Linux/Mac, on ne fait rien (utilisateur ouvre manuellement)
+	fmt.Println("Ouvrez votre navigateur à:", url)
+	return nil
+}
 
-	for _, c := range cmds {
-		cmd := exec.Command(c[0], c[1:]...)
-		if err := cmd.Start(); err == nil {
-			return nil
-		}
+// shellExecute appelle directement l'API Windows sans passer par exec
+func shellExecute(url string) error {
+	if runtime.GOOS != "windows" {
+		return nil
 	}
-	return fmt.Errorf("unable to open browser")
+	
+	// Charger shell32.dll
+	shell32, err := syscall.LoadDLL("shell32.dll")
+	if err != nil {
+		return err
+	}
+	defer shell32.Release()
+	
+	// Obtenir ShellExecuteW
+	shellExecute, err := shell32.FindProc("ShellExecuteW")
+	if err != nil {
+		return err
+	}
+	
+	// Convertir string en UTF16
+	urlPtr, _ := syscall.UTF16PtrFromString(url)
+	operationPtr, _ := syscall.UTF16PtrFromString("open")
+	
+	// Appeler ShellExecuteW directement
+	ret, _, _ := shellExecute.Call(
+		0,                           // hwnd
+		uintptr(unsafe.Pointer(operationPtr)), // operation
+		uintptr(unsafe.Pointer(urlPtr)),       // file
+		0,                           // parameters
+		0,                           // directory
+		1,                           // show command (SW_SHOWNORMAL)
+	)
+	
+	if ret <= 32 {
+		return fmt.Errorf("failed to open browser")
+	}
+	return nil
 }
 
 // ensureFilesExist crée les fichiers s'ils n'existent pas
