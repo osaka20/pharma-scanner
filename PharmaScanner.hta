@@ -1,788 +1,1028 @@
-<html>
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
 <head>
-    <title>PharmaScanner - Application Locale</title>
-    <HTA:APPLICATION 
-        ID="PharmaScanner"
-        APPLICATIONNAME="PharmaScanner"
-        BORDER="thick"
-        BORDERSTYLE="normal"
-        CAPTION="yes"
-        MAXIMIZEBUTTON="yes"
-        MINIMIZEBUTTON="yes"
-        SHOWINTASKBAR="yes"
-        SINGLEINSTANCE="yes"
-        SYSMENU="yes"
-        WINDOWSTATE="maximize"
-    />
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
-            overflow-x: hidden;
-        }
-        
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            overflow: hidden;
-        }
-        
-        .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 30px;
-            text-align: center;
-        }
-        
-        .header h1 {
-            font-size: 2.5em;
-            margin-bottom: 10px;
-        }
-        
-        .header p {
-            opacity: 0.9;
-            font-size: 1em;
-        }
-        
-        .content {
-            padding: 30px;
-        }
-        
-        .section {
-            margin-bottom: 30px;
-            padding: 25px;
-            border: 1px solid #e0e0e0;
-            border-radius: 8px;
-            background: #fafafa;
-        }
-        
-        .section h2 {
-            color: #667eea;
-            margin-bottom: 20px;
-            font-size: 1.5em;
-        }
-        
-        .form-group {
-            margin-bottom: 20px;
-        }
-        
-        label {
-            display: block;
-            margin-bottom: 8px;
-            color: #333;
-            font-weight: 600;
-            font-size: 0.95em;
-        }
-        
-        input, textarea, select {
-            width: 100%;
-            padding: 12px 15px;
-            border: 2px solid #ddd;
-            border-radius: 6px;
-            font-size: 1em;
-            font-family: inherit;
-            transition: border-color 0.3s;
-        }
-        
-        input:focus, textarea:focus, select:focus {
-            outline: none;
-            border-color: #667eea;
-        }
-        
-        .button-group {
-            display: flex;
-            gap: 12px;
-            flex-wrap: wrap;
-            margin-top: 20px;
-        }
-        
-        button {
-            padding: 14px 28px;
-            border: none;
-            border-radius: 6px;
-            font-size: 1em;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        
-        .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-        }
-        
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
-        }
-        
-        .btn-secondary {
-            background: #f0f0f0;
-            color: #333;
-        }
-        
-        .btn-secondary:hover {
-            background: #e0e0e0;
-        }
-        
-        .btn-danger {
-            background: #ff6b6b;
-            color: white;
-        }
-        
-        .btn-danger:hover {
-            background: #ff5252;
-            transform: translateY(-2px);
-        }
-        
-        .btn-success {
-            background: #51cf66;
-            color: white;
-        }
-        
-        .btn-success:hover {
-            background: #40c057;
-        }
-        
-        .medicine-list {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-            gap: 20px;
-            margin-top: 20px;
-        }
-        
-        .medicine-card {
-            background: white;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            padding: 20px;
-            transition: all 0.3s ease;
-        }
-        
-        .medicine-card:hover {
-            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
-            border-color: #667eea;
-        }
-        
-        .medicine-card h3 {
-            color: #667eea;
-            margin-bottom: 15px;
-            font-size: 1.3em;
-        }
-        
-        .medicine-card p {
-            font-size: 0.95em;
-            color: #666;
-            margin: 8px 0;
-            line-height: 1.5;
-        }
-        
-        .medicine-card .label {
-            font-weight: 700;
-            color: #333;
-        }
-        
-        .medicine-actions {
-            display: flex;
-            gap: 10px;
-            margin-top: 15px;
-        }
-        
-        .medicine-actions button {
-            flex: 1;
-            padding: 10px 15px;
-            font-size: 0.9em;
-        }
-        
-        .stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-        
-        .stat-box {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 25px;
-            border-radius: 8px;
-            text-align: center;
-        }
-        
-        .stat-box .value {
-            font-size: 2.5em;
-            font-weight: bold;
-            margin-bottom: 8px;
-        }
-        
-        .stat-box .label {
-            font-size: 1em;
-            opacity: 0.95;
-        }
-        
-        .message {
-            padding: 18px;
-            border-radius: 6px;
-            margin-bottom: 20px;
-            display: none;
-            font-weight: 500;
-        }
-        
-        .message.success {
-            background: #d4edda;
-            color: #155724;
-            display: block;
-            border: 2px solid #c3e6cb;
-        }
-        
-        .message.error {
-            background: #f8d7da;
-            color: #721c24;
-            display: block;
-            border: 2px solid #f5c6cb;
-        }
-        
-        .search-box {
-            position: relative;
-            margin-bottom: 25px;
-        }
-        
-        .search-box input {
-            padding-left: 45px;
-        }
-        
-        .search-box::before {
-            content: "🔍";
-            position: absolute;
-            left: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            pointer-events: none;
-            font-size: 1.2em;
-        }
-        
-        .empty-state {
-            text-align: center;
-            padding: 60px 20px;
-            color: #999;
-        }
-        
-        .empty-state .icon {
-            font-size: 5em;
-            margin-bottom: 20px;
-            opacity: 0.5;
-        }
-        
-        .tabs {
-            display: flex;
-            gap: 0;
-            margin-bottom: 30px;
-            border-bottom: 3px solid #e0e0e0;
-        }
-        
-        .tab {
-            padding: 15px 25px;
-            background: none;
-            border: none;
-            border-bottom: 4px solid transparent;
-            cursor: pointer;
-            font-size: 1.05em;
-            font-weight: 600;
-            color: #999;
-            transition: all 0.3s ease;
-        }
-        
-        .tab.active {
-            color: #667eea;
-            border-bottom-color: #667eea;
-        }
-        
-        .tab:hover:not(.active) {
-            color: #555;
-        }
-        
-        .tab-content {
-            display: none;
-        }
-        
-        .tab-content.active {
-            display: block;
-            animation: fadeIn 0.3s;
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-        
-        .footer {
-            background: #f9f9f9;
-            padding: 25px;
-            text-align: center;
-            color: #666;
-            font-size: 0.95em;
-            border-top: 2px solid #e0e0e0;
-        }
-        
-        .info-box {
-            background: #e3f2fd;
-            border-left: 4px solid #2196f3;
-            padding: 15px;
-            margin: 15px 0;
-            border-radius: 4px;
-        }
-        
-        .info-box strong {
-            color: #1976d2;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pharma Scanner</title>
+  <HTA:APPLICATION 
+    ID="PharmaScanner"
+    APPLICATIONNAME="PharmaScanner"
+    BORDER="thick"
+    BORDERSTYLE="normal"
+    CAPTION="yes"
+    MAXIMIZEBUTTON="yes"
+    MINIMIZEBUTTON="yes"
+    SHOWINTASKBAR="yes"
+    SINGLEINSTANCE="yes"
+    SYSMENU="yes"
+    WINDOWSTATE="maximize"
+  />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; color: #333; }
+    [dir="rtl"] { text-align: right; }
+    [dir="rtl"] .navbar-menu { flex-direction: row-reverse; }
+    .container { max-width: 1200px; margin: 0 auto; background: white; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2); }
+    .navbar { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 1.5rem 2rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
+    .navbar h1 { font-size: 1.8rem; }
+    .navbar-menu { display: flex; gap: 2rem; flex: 1; justify-content: center; flex-wrap: wrap; }
+    .nav-btn { background: rgba(255, 255, 255, 0.1); color: white; border: none; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer; font-weight: 500; transition: all 0.3s; }
+    .nav-btn:hover, .nav-btn.active { background: rgba(255, 255, 255, 0.2); }
+    .language-select { background: rgba(255, 255, 255, 0.1); color: white; border: 1px solid rgba(255, 255, 255, 0.3); padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer; }
+    .language-select option { background: #667eea; color: white; }
+    .content { padding: 2rem; }
+    .page { display: none; }
+    .page.active { display: block; }
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem; margin-bottom: 2rem; }
+    .stat-card { background: white; border: 1px solid #eee; border-radius: 8px; padding: 2rem; text-align: center; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05); }
+    .stat-label { color: #666; font-size: 0.9rem; margin-bottom: 0.5rem; }
+    .stat-value { font-size: 2rem; font-weight: bold; color: #667eea; }
+    .btn { padding: 0.75rem 1.5rem; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; font-weight: 500; transition: all 0.3s; }
+    .btn-primary { background: #667eea; color: white; }
+    .btn-primary:hover { background: #5568d3; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4); }
+    .btn-secondary { background: #e0e0e0; color: #333; }
+    .btn-danger { background: #ef5350; color: white; }
+    .btn-success { background: #66bb6a; color: white; }
+    .btn-warning { background: #ffb74d; color: white; }
+    .sale-btn { padding: 0.5rem 1rem; background: #66bb6a; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; }
+    .sale-btn:hover { background: #57a35b; }
+    .sale-btn:disabled { background: #ccc; cursor: not-allowed; }
+    .undo-btn { padding: 0.5rem 1rem; background: #ffb74d; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; }
+    .undo-btn:hover { background: #ff9800; }
+    .undo-btn:disabled { background: #ccc; cursor: not-allowed; }
+    .form-group { margin-bottom: 1.5rem; }
+    .form-group label { display: block; margin-bottom: 0.5rem; font-weight: 500; }
+    .form-group input, .form-group textarea { width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; font-family: inherit; }
+    .form-group input:focus, .form-group textarea:focus { outline: none; border-color: #667eea; box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.1); }
+    .table-container { overflow-x: auto; background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05); }
+    table { width: 100%; border-collapse: collapse; }
+    th { background: #f5f5f5; padding: 1rem; text-align: left; font-weight: 600; border-bottom: 2px solid #ddd; }
+    [dir="rtl"] th { text-align: right; }
+    td { padding: 1rem; border-bottom: 1px solid #eee; text-align: left; }
+    [dir="rtl"] td { text-align: right; }
+    tbody tr:hover { background: #f9f9f9; }
+    .modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.5); z-index: 1000; align-items: center; justify-content: center; }
+    .modal.active { display: flex; }
+    .modal-content { background: white; border-radius: 8px; padding: 2rem; max-width: 500px; width: 90%; max-height: 90vh; overflow-y: auto; }
+    .modal-header { font-size: 1.5rem; margin-bottom: 1.5rem; font-weight: 600; }
+    .modal-footer { display: flex; gap: 1rem; justify-content: flex-end; margin-top: 2rem; }
+    .search-box { margin-bottom: 2rem; }
+    .search-box input { width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; }
+    .alert { padding: 1rem; border-radius: 4px; margin-bottom: 1rem; display: none; }
+    .alert.show { display: block; }
+    .alert-success { background: #e8f5e9; border: 1px solid #66bb6a; color: #2e7d32; }
+    .alert-error { background: #ffebee; border: 1px solid #ef5350; color: #c62828; }
+    .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; }
+    .margin-negative { color: #ef5350; font-weight: bold; }
+    h2 { margin-bottom: 1.5rem; color: #333; }
+    h3 { margin-bottom: 1rem; color: #555; }
+    .actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+    .actions .btn { padding: 0.5rem 1rem; font-size: 12px; }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>💊 PharmaScanner</h1>
-            <p>Gestion durable des médicaments - Stockage local sur disque dur</p>
-        </div>
-        
-        <div class="content">
-            <div id="message" class="message"></div>
-            
-            <div class="stats">
-                <div class="stat-box">
-                    <div class="value" id="totalMedicines">0</div>
-                    <div class="label">Médicaments</div>
-                </div>
-                <div class="stat-box">
-                    <div class="value" id="dbSize">0 KB</div>
-                    <div class="label">Taille Fichier</div>
-                </div>
-                <div class="stat-box">
-                    <div class="value" id="lastSave">Jamais</div>
-                    <div class="label">Dernière Sauvegarde</div>
-                </div>
-            </div>
-            
-            <div class="info-box">
-                <strong>💾 Fichier de données:</strong> <span id="dataFilePath">pharma-data.json</span><br>
-                <strong>📂 Emplacement:</strong> Même dossier que cette application<br>
-                <strong>✅ Sauvegarde:</strong> Automatique à chaque modification
-            </div>
-            
-            <div class="tabs">
-                <button class="tab active" data-tab="tab-add">➕ Ajouter</button>
-                <button class="tab" data-tab="tab-list">📋 Liste</button>
-                <button class="tab" data-tab="tab-manage">⚙️ Gestion</button>
-            </div>
-            
-            <!-- TAB: Ajouter un médicament -->
-            <div id="tab-add" class="tab-content active">
-                <div class="section">
-                    <h2>Ajouter un Médicament</h2>
-                    
-                    <div class="form-group">
-                        <label for="medicineName">Nom du médicament *</label>
-                        <input type="text" id="medicineName" placeholder="Ex: Aspirine" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="medicineType">Type *</label>
-                        <select id="medicineType" required>
-                            <option value="">-- Sélectionner --</option>
-                            <option value="Analgésique">Analgésique</option>
-                            <option value="Antibiotique">Antibiotique</option>
-                            <option value="Anti-inflammatoire">Anti-inflammatoire</option>
-                            <option value="Antitussif">Antitussif</option>
-                            <option value="Antihistaminique">Antihistaminique</option>
-                            <option value="Cardiovasculaire">Cardiovasculaire</option>
-                            <option value="Digestif">Digestif</option>
-                            <option value="Autre">Autre</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="medicineQuantity">Quantité</label>
-                        <input type="number" id="medicineQuantity" min="0" placeholder="Ex: 10" value="1">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="medicineExpiry">Date d'expiration</label>
-                        <input type="date" id="medicineExpiry">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="medicineNotes">Notes</label>
-                        <textarea id="medicineNotes" rows="4" placeholder="Dosage, conservation, remarques..."></textarea>
-                    </div>
-                    
-                    <div class="button-group">
-                        <button class="btn-primary" id="btnAdd">✅ Ajouter</button>
-                        <button class="btn-secondary" id="btnClear">🔄 Effacer</button>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- TAB: Liste des médicaments -->
-            <div id="tab-list" class="tab-content">
-                <div class="section">
-                    <h2>Médicaments Enregistrés</h2>
-                    
-                    <div class="search-box">
-                        <input type="text" id="searchInput" placeholder="Chercher un médicament...">
-                    </div>
-                    
-                    <div id="medicineList" class="medicine-list"></div>
-                </div>
-            </div>
-            
-            <!-- TAB: Gestion -->
-            <div id="tab-manage" class="tab-content">
-                <div class="section">
-                    <h2>Gestion des Données</h2>
-                    
-                    <p style="margin-bottom: 20px; color: #666; line-height: 1.6;">
-                        Les données sont sauvegardées automatiquement dans <strong>pharma-data.json</strong> 
-                        dans le même dossier que cette application. Ce fichier est durable et ne sera jamais 
-                        perdu tant que vous ne le supprimez pas.
-                    </p>
-                    
-                    <div class="button-group">
-                        <button class="btn-success" id="btnSaveNow">💾 Sauvegarder Maintenant</button>
-                        <button class="btn-primary" id="btnReload">🔄 Recharger Données</button>
-                        <button class="btn-danger" id="btnClearAll">🗑️ Tout Effacer</button>
-                    </div>
-                    
-                    <div style="background: #fff; padding: 20px; border-radius: 6px; margin-top: 25px; border: 2px solid #e0e0e0;">
-                        <h3 style="color: #333; margin-bottom: 15px;">📊 Informations du Fichier</h3>
-                        <p id="fileInfo" style="font-size: 0.95em; color: #666; line-height: 1.8;"></p>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="footer">
-            🔐 Données stockées localement sur votre disque dur • Sauvegarde automatique • Aucun risque de perte
-        </div>
+  <div class="container">
+    <div class="navbar">
+      <h1 data-translate="appTitle">Pharma Scanner</h1>
+      <div class="navbar-menu">
+        <button class="nav-btn active" data-translate="dashboard" onclick="changePage('dashboard', this)">Dashboard</button>
+        <button class="nav-btn" data-translate="products" onclick="changePage('products', this)">Products</button>
+        <button class="nav-btn" data-translate="history" onclick="changePage('history', this)">History</button>
+        <button class="nav-btn" data-translate="backup" onclick="changePage('export', this)">Backup</button>
+      </div>
+      <select class="language-select" id="langSelect" onchange="changeLanguage()">
+        <option value="en">English</option>
+        <option value="ar">العربية</option>
+      </select>
     </div>
-    
-    <script type="text/javascript">
-        // ===== FILESYSTEM MANAGER (HTA) =====
-        var fso = new ActiveXObject("Scripting.FileSystemObject");
-        var dataFileName = "pharma-data.json";
-        var dataFilePath = getDataFilePath();
-        var medicines = [];
-        
-        // Get data file path
-        function getDataFilePath() {
-            var appPath = fso.GetParentFolderName(location.pathname.replace(/^\//, ""));
-            return fso.BuildPath(appPath, dataFileName);
+
+    <div class="content">
+      <div id="alert" class="alert"></div>
+
+      <div id="dashboard" class="page active">
+        <h2 data-translate="dashboardTitle">Dashboard</h2>
+        <div class="stats-grid">
+          <div class="stat-card"><div class="stat-label" data-translate="totalProducts">Total Products</div><div class="stat-value" id="totalProducts">0</div></div>
+          <div class="stat-card"><div class="stat-label" data-translate="stockValue">Stock Value</div><div class="stat-value" id="totalValue">0€</div></div>
+          <div class="stat-card" style="display:flex; flex-direction:column; gap:0.5rem; align-items:center;">
+            <div class="stat-label" data-translate="marginRealized">Margin Realized</div>
+            <div class="stat-value" id="totalMargin">0€</div>
+            <button class="btn btn-warning" style="padding:0.4rem 0.75rem; font-size:12px;" onclick="resetMargin()" data-translate="resetMargin">Reset Margin</button>
+          </div>
+        </div>
+        <h3 data-translate="recentProducts">Recently Added Products</h3>
+        <div class="table-container">
+          <table><thead><tr><th data-translate="name">Name</th><th data-translate="brand">Brand</th><th data-translate="salePrice">Sale Price</th><th data-translate="margin">Margin</th><th data-translate="quantity">Quantity</th></tr></thead>
+          <tbody id="recentProducts"><tr><td colspan="5" style="text-align: center; color: #999;" data-translate="noProducts">No products</td></tr></tbody></table>
+        </div>
+      </div>
+
+      <div id="products" class="page">
+        <h2 data-translate="productsTitle">Product Catalog</h2>
+        <div style="margin-bottom: 1rem;"><button class="btn btn-primary" onclick="openAddForm()" data-translate="addProduct">Add Product</button></div>
+        <div class="search-box"><input type="text" id="searchInput" onkeyup="filterProducts()" data-translate-placeholder="searchPlaceholder" placeholder="Search..."></div>
+        <div style="margin: 0 0 0.75rem 0; display:flex; flex-wrap:wrap; gap:0.5rem; align-items:center;">
+          <label style="font-size:12px; color:#555;">
+            <input type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAll(this.checked)"> <span data-translate="selectAll">Select all</span>
+          </label>
+          <button class="btn btn-secondary" onclick="openBulkQtyModal()" data-translate="bulkSetQty">Set quantity for selected</button>
+          <button class="btn btn-danger" onclick="bulkDelete()" data-translate="bulkDelete">Delete selected</button>
+        </div>
+        <div class="table-container">
+          <table><thead><tr><th></th><th data-translate="name">Name</th><th data-translate="brand">Brand</th><th data-translate="purchasePrice">Purchase Price</th><th data-translate="salePrice">Sale Price</th><th data-translate="margin">Margin</th><th data-translate="quantity">Quantity</th><th data-translate="sellQty">Qty to sell</th><th data-translate="actions">Actions</th></tr></thead>
+          <tbody id="productsList"><tr><td colspan="9" style="text-align: center; color: #999;" data-translate="noProducts">No products</td></tr></tbody></table>
+        </div>
+      </div>
+
+      <div id="history" class="page">
+        <div style="display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap;">
+          <h2 data-translate="historyTitle">Sales History</h2>
+          <div style="display:flex; gap:0.5rem; flex-wrap:wrap; align-items:center;">
+            <input type="date" id="historyStart" style="padding:0.4rem; border:1px solid #ddd; border-radius:4px;">
+            <input type="date" id="historyEnd" style="padding:0.4rem; border:1px solid #ddd; border-radius:4px;">
+            <input type="text" id="historySearch" data-translate-placeholder="searchHistory" placeholder="Filter..." style="padding:0.4rem; border:1px solid #ddd; border-radius:4px;">
+            <button class="btn btn-primary" onclick="applyHistoryFilters()" data-translate="applyFilters">Filter</button>
+            <button class="btn btn-secondary" onclick="clearHistoryFilters()" data-translate="clearFilters">Clear</button>
+            <button class="btn btn-success" onclick="exportHistoryPDF()" data-translate="exportPdf">Export PDF</button>
+          </div>
+        </div>
+        <div class="table-container" style="margin-top: 1rem;">
+          <table>
+            <thead>
+              <tr>
+                <th data-translate="saleDate">Date</th>
+                <th data-translate="saleProduct">Product</th>
+                <th data-translate="saleMargin">Margin</th>
+                <th data-translate="saleQuantity">Quantity</th>
+                <th data-translate="saleType">Type</th>
+              </tr>
+            </thead>
+            <tbody id="historyList"><tr><td colspan="5" style="text-align: center; color: #999;" data-translate="noSales">No sales yet</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div id="export" class="page">
+        <h2 data-translate="backupTitle">Backup & Restore</h2>
+        <div class="grid-2">
+          <div style="background: #f9f9f9; padding: 2rem; border-radius: 8px; text-align: center; display:flex; flex-direction:column; gap:0.5rem;">
+            <h3 data-translate="exportTitle">Export</h3><p style="margin-bottom: 0.5rem; color: #666;" data-translate="exportDesc">Download JSON backup</p>
+            <button class="btn btn-success" onclick="exportData()" data-translate="exportBtn">Export to JSON</button>
+            <div style="font-size:12px; color:#666;">Format compact (.json)</div>
+          </div>
+          <div style="background: #f9f9f9; padding: 2rem; border-radius: 8px; text-align: center; display:flex; flex-direction:column; gap:0.5rem;">
+            <h3 data-translate="importTitle">Import</h3><p style="margin-bottom: 0.5rem; color: #666;" data-translate="importDesc">Restore previous backup</p>
+            <input type="file" id="importFile" accept=".json" style="display: none;" onchange="handleImport()">
+            <button class="btn btn-primary" onclick="document.getElementById('importFile').click()" data-translate="importBtn">Import File</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="bulkQtyModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header" data-translate="bulkSetQty">Set quantity for selected</div>
+      <div style="margin-bottom: 1rem;">
+        <p style="margin-bottom: 0.5rem; font-weight: 500;"><span id="bulkSelectedCount">0</span> <span data-translate="productsSelected">products selected</span></p>
+        <div id="bulkSelectedList" style="max-height: 150px; overflow-y: auto; background: #f9f9f9; padding: 0.5rem; border-radius: 4px; font-size: 13px;"></div>
+      </div>
+      <div class="form-group">
+        <label data-translate="bulkQtyLabel">New quantity for all selected products</label>
+        <input type="number" id="bulkQtyInput" min="0" step="1" value="0" style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 4px;">
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeBulkQtyModal()" data-translate="cancel">Cancel</button>
+        <button type="button" class="btn btn-primary" onclick="confirmBulkSetQuantity()" data-translate="confirm">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="formModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header" id="formTitle" data-translate="addProductTitle">Add Product</div>
+      <form id="productForm" onsubmit="saveProduct(event)">
+        <div class="form-group"><label data-translate="productName">Product Name *</label><input type="text" id="formName" required></div>
+        <div class="form-group"><label data-translate="brandName">Brand *</label><input type="text" id="formBrand" required></div>
+        <div class="form-group"><label data-translate="productCode">Product Code</label><input type="text" id="formCode"></div>
+        <div class="form-group"><label data-translate="purchasePrice">Purchase Price</label><input type="number" id="formPurchasePrice" step="0.01" min="0" onchange="calculateMargin()"></div>
+        <div class="form-group"><label data-translate="salePrice">Sale Price</label><input type="number" id="formSalePrice" step="0.01" min="0" onchange="calculateMargin()"></div>
+        <div class="form-group"><label data-translate="marginCalculated">Margin (Calculated)</label><input type="number" id="formMargin" step="0.01" readonly style="background: #f5f5f5;"></div>
+        <div class="form-group"><label data-translate="stockQuantity">Stock Quantity</label><input type="number" id="formQuantity" step="1" min="0" value="0"></div>
+        <div class="form-group"><label data-translate="notes">Notes</label><textarea id="formNotes" rows="3"></textarea></div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeForm()" data-translate="cancel">Cancel</button>
+          <button type="submit" class="btn btn-primary" data-translate="save">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script type="text/javascript">
+    var fso = new ActiveXObject("Scripting.FileSystemObject");
+    var appPath = fso.GetParentFolderName(location.pathname.replace(/^\//, ""));
+    var dataFilePath = fso.BuildPath(appPath, "pharma-data.json");
+
+    let products = [];
+    let sales = [];
+    let currentEditId = null;
+    let language = localStorage.getItem('lang') || 'en';
+    let marginOffset = parseFloat(localStorage.getItem('pharmaMarginOffset') || 0);
+    let selectedProducts = new Set();
+
+    const translations = {
+      en: {
+        appTitle: 'Pharma Scanner',
+        dashboard: 'Dashboard',
+        products: 'Products',
+        backup: 'Backup',
+        dashboardTitle: 'Dashboard',
+        totalProducts: 'Total Products',
+        stockValue: 'Stock Value',
+        marginRealized: 'Margin Realized',
+        history: 'History',
+        saleType: 'Type',
+        sale: 'Sale',
+        undoType: 'Undo',
+        recentProducts: 'Recently Added Products',
+        productsTitle: 'Product Catalog',
+        addProduct: 'Add Product',
+        searchPlaceholder: 'Search by name, brand or code...',
+        name: 'Name',
+        brand: 'Brand',
+        purchasePrice: 'Purchase Price',
+        salePrice: 'Sale Price',
+        margin: 'Margin',
+        quantity: 'Quantity',
+        actions: 'Actions',
+        historyTitle: 'Sales History',
+        resetMargin: 'Reset Margin',
+        saleDate: 'Date',
+        saleProduct: 'Product',
+        saleMargin: 'Margin',
+        saleQuantity: 'Quantity',
+        sell: 'Sell',
+        undo: 'Undo',
+        edit: 'Edit',
+        delete: 'Delete',
+        backupTitle: 'Backup & Restore',
+        exportTitle: 'Export',
+        exportDesc: 'Download JSON backup',
+        exportBtn: 'Export to JSON',
+        exportPdf: 'Export PDF',
+        importTitle: 'Import',
+        importDesc: 'Restore previous backup',
+        importBtn: 'Import File',
+        applyFilters: 'Filter',
+        clearFilters: 'Clear',
+        searchHistory: 'Filter by product or type...',
+        addProductTitle: 'Add Product',
+        editProductTitle: 'Edit Product',
+        productName: 'Product Name *',
+        brandName: 'Brand *',
+        productCode: 'Product Code',
+        marginCalculated: 'Margin (Calculated)',
+        stockQuantity: 'Stock Quantity',
+        notes: 'Notes',
+        save: 'Save',
+        cancel: 'Cancel',
+        noProducts: 'No products',
+        noSales: 'No sales yet',
+        saleSuccess: 'Sale recorded! Margin: ',
+        undoSuccess: 'Sale cancelled!',
+        saveSuccess: 'Product saved successfully!',
+        deleteSuccess: 'Product deleted successfully!',
+        exportSuccess: 'Data exported successfully!',
+        importSuccess: 'Data imported successfully!',
+        deleteConfirm: 'Are you sure you want to delete this product?',
+        importConfirm: 'This will replace all current products. Continue?',
+        stockError: 'Insufficient stock!',
+        noSaleToUndo: 'No recent sale to undo for this product!',
+        resetConfirm: 'Reset realized margin to zero? History will stay.',
+        resetSuccess: 'Margin reset to zero.',
+        sellQty: 'Qty to sell',
+        bulkSetQty: 'Set quantity for selected',
+        bulkDelete: 'Delete selected',
+        bulkQtyPlaceholder: 'Quantity',
+        selectAll: 'Select all',
+        selectionNone: 'No product selected',
+        productsSelected: 'products selected',
+        bulkQtyLabel: 'New quantity for all selected products',
+        confirm: 'Confirm',
+        bulkQtyConfirm: 'Set quantity to {{qty}} for {{count}} products?'
+      },
+      ar: {
+        appTitle: 'Pharma Scanner',
+        dashboard: 'لوحة المعلومات',
+        products: 'المنتجات',
+        backup: 'النسخ الاحتياطي',
+        dashboardTitle: 'لوحة المعلومات',
+        totalProducts: 'إجمالي المنتجات',
+        stockValue: 'قيمة المخزون',
+        marginRealized: 'الهامش المحقق',
+        history: 'السجل',
+        saleType: 'النوع',
+        sale: 'بيع',
+        undoType: 'تراجع',
+        recentProducts: 'المنتجات المضافة مؤخراً',
+        productsTitle: 'كتالوج المنتجات',
+        addProduct: 'إضافة منتج',
+        searchPlaceholder: 'البحث بالاسم أو العلامة التجارية أو الرمز...',
+        name: 'الاسم',
+        brand: 'العلامة التجارية',
+        purchasePrice: 'سعر الشراء',
+        salePrice: 'سعر البيع',
+        margin: 'الهامش',
+        quantity: 'الكمية',
+        actions: 'الإجراءات',
+        historyTitle: 'سجل المبيعات',
+        resetMargin: 'تصفير الهامش',
+        saleDate: 'التاريخ',
+        saleProduct: 'المنتج',
+        saleMargin: 'الهامش',
+        saleQuantity: 'الكمية',
+        sell: 'بيع',
+        undo: 'تراجع',
+        edit: 'تعديل',
+        delete: 'حذف',
+        backupTitle: 'النسخ الاحتياطي والاستعادة',
+        exportTitle: 'تصدير',
+        exportDesc: 'تنزيل نسخة احتياطية JSON',
+        exportBtn: 'تصدير إلى JSON',
+        exportPdf: 'تصدير PDF',
+        importTitle: 'استيراد',
+        importDesc: 'استعادة نسخة احتياطية سابقة',
+        importBtn: 'استيراد ملف',
+        applyFilters: 'تطبيق الفلاتر',
+        clearFilters: 'إزالة الفلاتر',
+        searchHistory: 'تصفية حسب المنتج أو النوع...',
+        addProductTitle: 'إضافة منتج',
+        editProductTitle: 'تعديل المنتج',
+        productName: 'اسم المنتج *',
+        brandName: 'العلامة التجارية *',
+        productCode: 'رمز المنتج',
+        marginCalculated: 'الهامش (محسوب)',
+        stockQuantity: 'كمية المخزون',
+        notes: 'ملاحظات',
+        save: 'حفظ',
+        cancel: 'إلغاء',
+        noProducts: 'لا توجد منتجات',
+        noSales: 'لا توجد مبيعات بعد',
+        saleSuccess: 'تم تسجيل البيع! الهامش: ',
+        undoSuccess: 'تم إلغاء البيع!',
+        saveSuccess: 'تم حفظ المنتج بنجاح!',
+        deleteSuccess: 'تم حذف المنتج بنجاح!',
+        exportSuccess: 'تم تصدير البيانات بنجاح!',
+        importSuccess: 'تم استيراد البيانات بنجاح!',
+        deleteConfirm: 'هل أنت متأكد من حذف هذا المنتج؟',
+        importConfirm: 'سيؤدي هذا إلى استبدال جميع المنتجات الحالية. متابعة؟',
+        stockError: 'مخزون غير كافٍ!',
+        noSaleToUndo: 'لا توجد عملية بيع حديثة للتراجع عنها لهذا المنتج!',
+        resetConfirm: 'تصفير الهامش المحقق؟ سيبقى السجل محفوظاً.',
+        resetSuccess: 'تم تصفير الهامش.',
+        sellQty: 'الكمية للبيع',
+        bulkSetQty: 'تعيين الكمية للمحدد',
+        bulkDelete: 'حذف العناصر المحددة',
+        bulkQtyPlaceholder: 'الكمية',
+        selectAll: 'تحديد الكل',
+        selectionNone: 'لا يوجد منتج محدد',
+        productsSelected: 'منتج محدد',
+        bulkQtyLabel: 'الكمية الجديدة لجميع المنتجات المحددة',
+        confirm: 'تأكيد',
+        bulkQtyConfirm: 'تعيين الكمية إلى {{qty}} لـ {{count}} منتج؟'
+      }
+    };
+
+    function loadData() {
+      try {
+        if (fso.FileExists(dataFilePath)) {
+          var file = fso.OpenTextFile(dataFilePath, 1, false, -1);
+          var content = file.ReadAll();
+          file.Close();
+          if (content && content.trim()) {
+            unpackState(content);
+          } else {
+            products = [];
+            sales = [];
+            marginOffset = 0;
+          }
+        } else {
+          products = [];
+          sales = [];
+          marginOffset = 0;
+          saveAll();
         }
-        
-        // Load data from file
-        function loadData() {
-            try {
-                if (fso.FileExists(dataFilePath)) {
-                    var file = fso.OpenTextFile(dataFilePath, 1, false, -1);
-                    var content = file.ReadAll();
-                    file.Close();
-                    
-                    if (content && content.trim()) {
-                        var data = JSON.parse(content);
-                        medicines = data.medicines || [];
-                        showMessage("✅ Données chargées: " + medicines.length + " médicament(s)", "success");
-                    } else {
-                        medicines = [];
-                    }
-                } else {
-                    medicines = [];
-                    saveData(); // Create initial file
-                }
-            } catch (e) {
-                showMessage("❌ Erreur de chargement: " + e.message, "error");
-                medicines = [];
-            }
+      } catch (e) {
+        showAlert('Error loading data: ' + e.message, 'error');
+        products = [];
+        sales = [];
+      }
+      renderAll();
+    }
+
+    function saveAll() {
+      try {
+        var payload = packState();
+        var file = fso.CreateTextFile(dataFilePath, true, true);
+        file.Write(payload);
+        file.Close();
+      } catch (e) {
+        showAlert('Error saving data: ' + e.message, 'error');
+      }
+    }
+
+    function packState() {
+      return JSON.stringify({
+        v: 2,
+        p: products.map(p => ({ i: p.id, n: p.name, b: p.brand, c: p.code, bp: p.purchasePrice, sp: p.salePrice, m: p.margin, q: p.quantity, no: p.notes })),
+        s: sales.map(s => [s.date, s.productId, s.marginTotal, s.type === 'undo' ? 'u' : 's', s.undone ? 1 : 0, s.qty || 1]),
+        o: marginOffset
+      });
+    }
+
+    function unpackState(text) {
+      try {
+        var data = JSON.parse(text);
+        if (data.v === 2) {
+          products = (data.p || []).map(p => ({
+            id: p.i,
+            name: p.n,
+            brand: p.b,
+            code: p.c,
+            purchasePrice: p.bp,
+            salePrice: p.sp,
+            margin: p.m,
+            quantity: p.q,
+            notes: p.no || ''
+          }));
+          sales = (data.s || []).map(s => ({
+            date: s[0],
+            productId: s[1],
+            marginTotal: s[2],
+            type: s[3] === 'u' ? 'undo' : 'sale',
+            undone: !!s[4],
+            qty: s[5] || 1,
+            productName: ''
+          }));
+          marginOffset = parseFloat(data.o || 0) || 0;
+        } else {
+          products = data.products || [];
+          sales = data.sales || [];
+          marginOffset = parseFloat(data.marginOffset || 0) || 0;
         }
-        
-        // Save data to file
-        function saveData() {
-            try {
-                var data = {
-                    version: 1,
-                    medicines: medicines,
-                    lastSave: new Date().toISOString()
-                };
-                
-                var json = JSON.stringify(data, null, 2);
-                var file = fso.CreateTextFile(dataFilePath, true, true);
-                file.Write(json);
-                file.Close();
-                
-                updateStats();
-                return true;
-            } catch (e) {
-                showMessage("❌ Erreur de sauvegarde: " + e.message, "error");
-                return false;
-            }
+        var names = {};
+        for (var i = 0; i < products.length; i++) {
+          names[products[i].id] = products[i].name;
         }
-        
-        // Add medicine
-        function addMedicine(medicine) {
-            medicine.id = new Date().getTime();
-            medicine.timestamp = new Date().toISOString();
-            medicines.push(medicine);
-            
-            if (saveData()) {
-                showMessage("✅ Médicament ajouté avec succès", "success");
-                return true;
-            }
-            return false;
+        for (var i = 0; i < sales.length; i++) {
+          sales[i].productName = names[sales[i].productId] || '(deleted)';
         }
-        
-        // Delete medicine
-        function deleteMedicine(id) {
-            var index = -1;
-            for (var i = 0; i < medicines.length; i++) {
-                if (medicines[i].id === id) {
-                    index = i;
-                    break;
-                }
-            }
-            
-            if (index !== -1) {
-                medicines.splice(index, 1);
-                if (saveData()) {
-                    showMessage("✅ Médicament supprimé", "success");
-                    updateUI();
-                    return true;
-                }
-            }
-            return false;
+      } catch (e) {
+        console.log('Parse error:', e.message);
+      }
+    }
+
+    function t(key) {
+      return translations[language] && translations[language][key] ? translations[language][key] : key;
+    }
+
+    function applyTranslations() {
+      var els = document.querySelectorAll('[data-translate]');
+      for (var i = 0; i < els.length; i++) {
+        var key = els[i].getAttribute('data-translate');
+        els[i].textContent = t(key);
+      }
+      
+      var pls = document.querySelectorAll('[data-translate-placeholder]');
+      for (var i = 0; i < pls.length; i++) {
+        var key = pls[i].getAttribute('data-translate-placeholder');
+        pls[i].placeholder = t(key);
+      }
+
+      document.documentElement.setAttribute('dir', language === 'ar' ? 'rtl' : 'ltr');
+      document.documentElement.setAttribute('lang', language);
+    }
+
+    function changeLanguage() {
+      language = document.getElementById('langSelect').value;
+      localStorage.setItem('lang', language);
+      applyTranslations();
+      renderAll();
+    }
+
+    function renderDashboard() {
+      var total = products.length;
+      var value = 0;
+      for (var i = 0; i < products.length; i++) {
+        value += (parseFloat(products[i].salePrice || 0) * parseFloat(products[i].quantity || 0));
+      }
+      var marginRaw = 0;
+      for (var i = 0; i < sales.length; i++) {
+        marginRaw += parseFloat(sales[i].marginTotal || 0);
+      }
+      var margin = marginRaw - marginOffset;
+      
+      document.getElementById('totalProducts').textContent = total;
+      document.getElementById('totalValue').textContent = value.toFixed(2) + '€';
+      document.getElementById('totalMargin').textContent = margin.toFixed(2) + '€';
+      
+      var recent = products.slice(-5).reverse();
+      var html = '';
+      if (recent.length) {
+        for (var i = 0; i < recent.length; i++) {
+          var p = recent[i];
+          html += '<tr><td>' + p.name + '</td><td>' + p.brand + '</td><td>' + parseFloat(p.salePrice || 0).toFixed(2) + '€</td><td class="' + (parseFloat(p.margin || 0) < 0 ? 'margin-negative' : '') + '">' + parseFloat(p.margin || 0).toFixed(2) + '€</td><td>' + (p.quantity || 0) + '</td></tr>';
         }
-        
-        // Clear all
-        function clearAll() {
-            medicines = [];
-            if (saveData()) {
-                showMessage("✅ Toutes les données ont été effacées", "success");
-                updateUI();
-                return true;
-            }
-            return false;
+      } else {
+        html = '<tr><td colspan="5" style="text-align: center; color: #999;">' + t('noProducts') + '</td></tr>';
+      }
+      document.getElementById('recentProducts').innerHTML = html;
+    }
+
+    function getFilteredSales() {
+      var startEl = document.getElementById('historyStart');
+      var endEl = document.getElementById('historyEnd');
+      var searchEl = document.getElementById('historySearch');
+      var start = startEl && startEl.value ? new Date(startEl.value) : null;
+      var end = endEl && endEl.value ? new Date(endEl.value) : null;
+      var term = (searchEl && searchEl.value ? searchEl.value : '').toLowerCase();
+
+      var filtered = [];
+      for (var i = 0; i < sales.length; i++) {
+        var sale = sales[i];
+        var d = new Date(sale.date);
+        if (start && d < new Date(start.getTime())) continue;
+        if (end) {
+          var endDay = new Date(end);
+          endDay.setHours(23,59,59,999);
+          if (d > endDay) continue;
         }
-        
-        // Update stats
-        function updateStats() {
-            document.getElementById("totalMedicines").textContent = medicines.length;
-            
-            try {
-                if (fso.FileExists(dataFilePath)) {
-                    var file = fso.GetFile(dataFilePath);
-                    var sizeKB = (file.Size / 1024).toFixed(2);
-                    document.getElementById("dbSize").textContent = sizeKB + " KB";
-                    
-                    var modDate = new Date(file.DateLastModified);
-                    document.getElementById("lastSave").textContent = modDate.toLocaleTimeString("fr-FR");
-                    
-                    document.getElementById("fileInfo").innerHTML = 
-                        "<strong>Fichier:</strong> " + dataFilePath + "<br>" +
-                        "<strong>Taille:</strong> " + sizeKB + " KB<br>" +
-                        "<strong>Médicaments:</strong> " + medicines.length + "<br>" +
-                        "<strong>Dernière modification:</strong> " + modDate.toLocaleString("fr-FR");
-                } else {
-                    document.getElementById("dbSize").textContent = "0 KB";
-                    document.getElementById("lastSave").textContent = "Jamais";
-                }
-            } catch (e) {
-                console.log(e);
-            }
-            
-            document.getElementById("dataFilePath").textContent = dataFilePath;
+        var name = (sale.productName || '').toLowerCase();
+        var type = (sale.type || 'sale').toLowerCase();
+        if (name.indexOf(term) !== -1 || type.indexOf(term) !== -1) {
+          filtered.push(sale);
         }
-        
-        // Show message
-        function showMessage(text, type) {
-            var messageEl = document.getElementById("message");
-            messageEl.textContent = text;
-            messageEl.className = "message " + type;
-            setTimeout(function() {
-                messageEl.className = "message";
-            }, 5000);
+      }
+      filtered.sort(function(a, b) { return new Date(b.date) - new Date(a.date); });
+      return filtered;
+    }
+
+    function renderHistory() {
+      var list = getFilteredSales();
+      var html = '';
+      if (list.length) {
+        for (var i = 0; i < list.length; i++) {
+          var sale = list[i];
+          var date = new Date(sale.date);
+          var formatted = date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+          var marginVal = parseFloat(sale.marginTotal || 0);
+          var typeLabel = sale.type === 'undo' ? t('undoType') : t('sale');
+          var qty = sale.type === 'undo' ? '+' + (sale.qty || 1) : '-' + (sale.qty || 1);
+          var marginClass = marginVal < 0 ? 'margin-negative' : '';
+          html += '<tr><td>' + formatted + '</td><td>' + sale.productName + '</td><td class="' + marginClass + '">' + marginVal.toFixed(2) + '€</td><td>' + qty + '</td><td>' + typeLabel + '</td></tr>';
         }
-        
-        // Format date
-        function formatDate(dateStr) {
-            if (!dateStr) return "-";
-            var d = new Date(dateStr);
-            return d.toLocaleDateString("fr-FR");
+      } else {
+        html = '<tr><td colspan="5" style="text-align: center; color: #999;">' + t('noSales') + '</td></tr>';
+      }
+      document.getElementById('historyList').innerHTML = html;
+    }
+
+    function applyHistoryFilters() { renderHistory(); }
+    function clearHistoryFilters() {
+      var startEl = document.getElementById('historyStart');
+      var endEl = document.getElementById('historyEnd');
+      var searchEl = document.getElementById('historySearch');
+      if (startEl) startEl.value = '';
+      if (endEl) endEl.value = '';
+      if (searchEl) searchEl.value = '';
+      renderHistory();
+    }
+
+    function renderProducts() {
+      var searchEl = document.getElementById('searchInput');
+      var search = (searchEl && searchEl.value ? searchEl.value : '').toLowerCase();
+      var filtered = [];
+      for (var i = 0; i < products.length; i++) {
+        var p = products[i];
+        var name = (p && p.name ? p.name : '').toLowerCase();
+        var brand = (p && p.brand ? p.brand : '').toLowerCase();
+        var code = (p && p.code ? p.code : '').toLowerCase();
+        if (name.indexOf(search) !== -1 || brand.indexOf(search) !== -1 || code.indexOf(search) !== -1) {
+          filtered.push(p);
         }
-        
-        // Escape HTML
-        function escapeHtml(text) {
-            var div = document.createElement("div");
-            div.textContent = text;
-            return div.innerHTML;
+      }
+      
+      var html = '';
+      if (filtered.length) {
+        for (var i = 0; i < filtered.length; i++) {
+          var p = filtered[i];
+          var hasUndo = false;
+          for (var j = 0; j < sales.length; j++) {
+            var s = sales[j];
+            if (s.productId === p.id && s.type === 'sale' && !s.undone) {
+              hasUndo = true;
+              break;
+            }
+          }
+          var checked = selectedProducts.has(p.id) ? 'checked' : '';
+          html += '<tr><td style="text-align:center;"><input type="checkbox" ' + checked + ' onchange="toggleSelect(' + p.id + ', this.checked)"></td>';
+          html += '<td>' + p.name + '</td><td>' + p.brand + '</td><td>' + parseFloat(p.purchasePrice || 0).toFixed(2) + '€</td>';
+          html += '<td>' + parseFloat(p.salePrice || 0).toFixed(2) + '€</td>';
+          html += '<td class="' + (parseFloat(p.margin || 0) < 0 ? 'margin-negative' : '') + '">' + parseFloat(p.margin || 0).toFixed(2) + '€</td>';
+          html += '<td>' + (p.quantity || 0) + '</td>';
+          html += '<td><input type="number" id="sellQty-' + p.id + '" min="1" step="1" value="1" style="width:70px; padding:0.2rem; border:1px solid #ccc; border-radius:4px;"></td>';
+          html += '<td class="actions">';
+          html += '<button class="sale-btn" onclick="sellProduct(' + p.id + ')" ' + (p.quantity <= 0 ? 'disabled' : '') + '>' + t('sell') + '</button>';
+          html += '<button class="undo-btn" onclick="undoSale(' + p.id + ')" ' + (!hasUndo ? 'disabled' : '') + '>' + t('undo') + '</button>';
+          html += '<button class="btn btn-secondary" onclick="editProduct(' + p.id + ')">' + t('edit') + '</button>';
+          html += '<button class="btn btn-danger" onclick="deleteProduct(' + p.id + ')">' + t('delete') + '</button>';
+          html += '</td></tr>';
         }
-        
-        // Render medicines
-        function renderMedicines(list) {
-            var container = document.getElementById("medicineList");
-            
-            if (list.length === 0) {
-                container.innerHTML = 
-                    '<div class="empty-state" style="grid-column: 1/-1;">' +
-                    '<div class="icon">📭</div>' +
-                    '<p style="font-size: 1.2em;">Aucun médicament enregistré</p>' +
-                    '</div>';
-                return;
-            }
-            
-            var html = "";
-            for (var i = 0; i < list.length; i++) {
-                var m = list[i];
-                html += '<div class="medicine-card">' +
-                    '<h3>' + escapeHtml(m.name) + '</h3>' +
-                    '<p><span class="label">Type:</span> ' + escapeHtml(m.type) + '</p>' +
-                    '<p><span class="label">Quantité:</span> ' + m.quantity + '</p>' +
-                    (m.expiry ? '<p><span class="label">Expiration:</span> ' + formatDate(m.expiry) + '</p>' : '') +
-                    (m.notes ? '<p><span class="label">Notes:</span> ' + escapeHtml(m.notes.substring(0, 100)) + '</p>' : '') +
-                    '<div class="medicine-actions">' +
-                    '<button class="btn-secondary" onclick="editMedicine(' + m.id + ')">✏️ Éditer</button>' +
-                    '<button class="btn-danger" onclick="deleteMedicine(' + m.id + ')">🗑️ Supprimer</button>' +
-                    '</div>' +
-                    '</div>';
-            }
-            container.innerHTML = html;
+      } else {
+        html = '<tr><td colspan="9" style="text-align: center; color: #999;">' + t('noProducts') + '</td></tr>';
+      }
+      document.getElementById('productsList').innerHTML = html;
+      var selectAllEl = document.getElementById('selectAllCheckbox');
+      if (selectAllEl) {
+        var allSelected = filtered.length > 0;
+        for (var i = 0; i < filtered.length; i++) {
+          if (!selectedProducts.has(filtered[i].id)) {
+            allSelected = false;
+            break;
+          }
         }
-        
-        // Update UI
-        function updateUI() {
-            updateStats();
-            renderMedicines(medicines);
+        selectAllEl.checked = allSelected;
+      }
+    }
+
+    function toggleSelect(id, checked) {
+      if (checked) {
+        selectedProducts.add(id);
+      } else {
+        selectedProducts.delete(id);
+      }
+    }
+
+    function toggleSelectAll(checked) {
+      if (checked) {
+        for (var i = 0; i < products.length; i++) {
+          selectedProducts.add(products[i].id);
         }
-        
-        // Edit medicine
-        function editMedicine(id) {
-            for (var i = 0; i < medicines.length; i++) {
-                if (medicines[i].id === id) {
-                    var m = medicines[i];
-                    document.getElementById("medicineName").value = m.name;
-                    document.getElementById("medicineType").value = m.type;
-                    document.getElementById("medicineQuantity").value = m.quantity;
-                    document.getElementById("medicineExpiry").value = m.expiry || "";
-                    document.getElementById("medicineNotes").value = m.notes || "";
-                    
-                    deleteMedicine(id);
-                    document.querySelector('[data-tab="tab-add"]').click();
-                    document.getElementById("medicineName").focus();
-                    break;
-                }
-            }
+      } else {
+        selectedProducts.clear();
+      }
+      renderProducts();
+    }
+
+    function bulkDelete() {
+      if (selectedProducts.size === 0) return showAlert(t('selectionNone'), 'error');
+      var filtered = [];
+      for (var i = 0; i < products.length; i++) {
+        if (!selectedProducts.has(products[i].id)) {
+          filtered.push(products[i]);
         }
-        
-        // Event: Add button
-        document.getElementById("btnAdd").onclick = function() {
-            var name = document.getElementById("medicineName").value.trim();
-            var type = document.getElementById("medicineType").value.trim();
-            
-            if (!name || !type) {
-                showMessage("❌ Veuillez remplir les champs obligatoires", "error");
-                return;
-            }
-            
-            if (addMedicine({
-                name: name,
-                type: type,
-                quantity: parseInt(document.getElementById("medicineQuantity").value) || 1,
-                expiry: document.getElementById("medicineExpiry").value,
-                notes: document.getElementById("medicineNotes").value.trim()
-            })) {
-                document.getElementById("medicineName").value = "";
-                document.getElementById("medicineType").value = "";
-                document.getElementById("medicineQuantity").value = "1";
-                document.getElementById("medicineExpiry").value = "";
-                document.getElementById("medicineNotes").value = "";
-                updateUI();
-            }
-        };
-        
-        // Event: Clear button
-        document.getElementById("btnClear").onclick = function() {
-            document.getElementById("medicineName").value = "";
-            document.getElementById("medicineType").value = "";
-            document.getElementById("medicineQuantity").value = "1";
-            document.getElementById("medicineExpiry").value = "";
-            document.getElementById("medicineNotes").value = "";
-        };
-        
-        // Event: Search
-        document.getElementById("searchInput").onkeyup = function() {
-            var term = this.value.toLowerCase();
-            var filtered = [];
-            for (var i = 0; i < medicines.length; i++) {
-                var m = medicines[i];
-                if (m.name.toLowerCase().indexOf(term) !== -1 || 
-                    m.type.toLowerCase().indexOf(term) !== -1) {
-                    filtered.push(m);
-                }
-            }
-            renderMedicines(filtered);
-        };
-        
-        // Event: Save now
-        document.getElementById("btnSaveNow").onclick = function() {
-            if (saveData()) {
-                showMessage("✅ Données sauvegardées avec succès", "success");
-            }
-        };
-        
-        // Event: Reload
-        document.getElementById("btnReload").onclick = function() {
-            loadData();
-            updateUI();
-        };
-        
-        // Event: Clear all
-        document.getElementById("btnClearAll").onclick = function() {
-            if (confirm("⚠️ Cela supprimera TOUS les médicaments du fichier. Êtes-vous sûr?")) {
-                clearAll();
-            }
-        };
-        
-        // Tab switching
-        var tabs = document.querySelectorAll(".tab");
-        for (var i = 0; i < tabs.length; i++) {
-            tabs[i].onclick = function() {
-                var allTabs = document.querySelectorAll(".tab");
-                var allContents = document.querySelectorAll(".tab-content");
-                
-                for (var j = 0; j < allTabs.length; j++) {
-                    allTabs[j].className = "tab";
-                    allContents[j].className = "tab-content";
-                }
-                
-                this.className = "tab active";
-                document.getElementById(this.getAttribute("data-tab")).className = "tab-content active";
-            };
+      }
+      products = filtered;
+      selectedProducts.clear();
+      saveAll();
+      renderProducts();
+      showAlert(t('deleteSuccess'), 'success');
+    }
+
+    function openBulkQtyModal() {
+      if (selectedProducts.size === 0) return showAlert(t('selectionNone'), 'error');
+      var selectedList = [];
+      for (var i = 0; i < products.length; i++) {
+        if (selectedProducts.has(products[i].id)) {
+          selectedList.push(products[i]);
         }
-        
-        // Initialize
-        window.onload = function() {
-            loadData();
-            updateUI();
-            showMessage("✅ Application chargée - Fichier: " + dataFilePath, "success");
-        };
-    </script>
+      }
+      document.getElementById('bulkSelectedCount').textContent = selectedList.length;
+      var listHtml = '';
+      for (var i = 0; i < selectedList.length; i++) {
+        var p = selectedList[i];
+        listHtml += '<div style="padding: 0.25rem 0; border-bottom: 1px solid #ddd;">' + p.name + ' - ' + p.brand + ' (' + t('quantity') + ': ' + p.quantity + ')</div>';
+      }
+      document.getElementById('bulkSelectedList').innerHTML = listHtml;
+      document.getElementById('bulkQtyInput').value = 0;
+      document.getElementById('bulkQtyModal').classList.add('active');
+    }
+
+    function closeBulkQtyModal() {
+      document.getElementById('bulkQtyModal').classList.remove('active');
+    }
+
+    function confirmBulkSetQuantity() {
+      var qty = parseInt(document.getElementById('bulkQtyInput').value || 0);
+      if (isNaN(qty) || qty < 0) return showAlert(t('stockError'), 'error');
+      if (!confirm(t('bulkQtyConfirm').replace('{{qty}}', qty).replace('{{count}}', selectedProducts.size))) return;
+      for (var i = 0; i < products.length; i++) {
+        if (selectedProducts.has(products[i].id)) {
+          products[i].quantity = qty;
+        }
+      }
+      selectedProducts.clear();
+      closeBulkQtyModal();
+      saveAll();
+      renderProducts();
+      showAlert(t('saveSuccess'), 'success');
+    }
+
+    function renderAll() { 
+      renderDashboard(); 
+      renderProducts();
+      renderHistory();
+      applyTranslations();
+    }
+
+    function sellProduct(id) {
+      var product = null;
+      for (var i = 0; i < products.length; i++) {
+        if (products[i].id === id) {
+          product = products[i];
+          break;
+        }
+      }
+      if (!product) return;
+      var qtyInput = document.getElementById('sellQty-' + id);
+      var qty = parseInt(qtyInput && qtyInput.value ? qtyInput.value : 1);
+      if (isNaN(qty) || qty <= 0) return showAlert(t('stockError'), 'error');
+      if (product.quantity < qty) return showAlert(t('stockError'), 'error');
+
+      product.quantity -= qty;
+      var marginPerUnit = parseFloat(product.margin || 0);
+      var sale = {
+        id: Date.now(),
+        productId: id,
+        productName: product.name,
+        marginTotal: marginPerUnit * qty,
+        qty: qty,
+        date: new Date().toISOString(),
+        type: 'sale',
+        undone: false
+      };
+      sales.push(sale);
+      if (qtyInput) qtyInput.value = 1;
+      
+      saveAll();
+      renderAll();
+      showAlert(t('saleSuccess') + (marginPerUnit * qty).toFixed(2) + '€', 'success');
+    }
+
+    function undoSale(id) {
+      var product = null;
+      for (var i = 0; i < products.length; i++) {
+        if (products[i].id === id) {
+          product = products[i];
+          break;
+        }
+      }
+      if (!product) return;
+      
+      var lastSaleIndex = -1;
+      for (var i = sales.length - 1; i >= 0; i--) {
+        var s = sales[i];
+        if (s.productId === id && s.type === 'sale' && !s.undone) {
+          lastSaleIndex = i;
+          break;
+        }
+      }
+      if (lastSaleIndex === -1) {
+        return showAlert(t('noSaleToUndo'), 'error');
+      }
+
+      var lastSale = sales[lastSaleIndex];
+      var qty = lastSale.qty || 1;
+      product.quantity += qty;
+      sales[lastSaleIndex].undone = true;
+      sales.push({
+        id: Date.now(),
+        productId: id,
+        productName: product.name,
+        marginTotal: -Math.abs(parseFloat(lastSale.marginTotal || 0)),
+        qty: qty,
+        date: new Date().toISOString(),
+        type: 'undo'
+      });
+      
+      saveAll();
+      renderAll();
+      showAlert(t('undoSuccess'), 'success');
+    }
+
+    function resetMargin() {
+      if (!confirm(t('resetConfirm'))) return;
+      var totalMargin = 0;
+      for (var i = 0; i < sales.length; i++) {
+        totalMargin += parseFloat(sales[i].marginTotal || 0);
+      }
+      marginOffset = totalMargin;
+      localStorage.setItem('pharmaMarginOffset', marginOffset);
+      saveAll();
+      renderAll();
+      showAlert(t('resetSuccess'), 'success');
+    }
+
+    function exportHistoryPDF() {
+      var list = getFilteredSales();
+      var totalRawMargin = 0;
+      for (var i = 0; i < list.length; i++) {
+        totalRawMargin += parseFloat(list[i].marginTotal || 0);
+      }
+      var startEl = document.getElementById('historyStart');
+      var endEl = document.getElementById('historyEnd');
+      var rangeText = (startEl && startEl.value ? startEl.value : '...') + ' → ' + (endEl && endEl.value ? endEl.value : '...');
+
+      var rows = '';
+      for (var i = 0; i < list.length; i++) {
+        var sale = list[i];
+        var d = new Date(sale.date);
+        var formatted = d.toLocaleDateString() + ' ' + d.toLocaleTimeString();
+        var marginVal = parseFloat(sale.marginTotal || 0);
+        var typeLabel = sale.type === 'undo' ? t('undoType') : t('sale');
+        var qty = sale.type === 'undo' ? '+' + (sale.qty || 1) : '-' + (sale.qty || 1);
+        var marginTxt = marginVal.toFixed(2) + '€';
+        rows += '<tr><td>' + formatted + '</td><td>' + sale.productName + '</td><td>' + qty + '</td><td>' + typeLabel + '</td><td>' + marginTxt + '</td></tr>';
+      }
+
+      var html = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>History PDF</title><style>body { font-family: Arial, sans-serif; padding: 20px; } h2 { margin-bottom: 0.2rem; } p { margin: 0.1rem 0 1rem 0; } table { width: 100%; border-collapse: collapse; margin-top: 1rem; } th, td { border: 1px solid #ccc; padding: 8px; text-align: left; } th { background: #f5f5f5; }</style></head><body>';
+      html += '<h2>' + t('historyTitle') + '</h2>';
+      html += '<p>' + t('saleDate') + ': ' + rangeText + '</p>';
+      html += '<p>' + t('saleMargin') + ': ' + totalRawMargin.toFixed(2) + '€</p>';
+      html += '<table><thead><tr><th>' + t('saleDate') + '</th><th>' + t('saleProduct') + '</th><th>' + t('saleQuantity') + '</th><th>' + t('saleType') + '</th><th>' + t('saleMargin') + '</th></tr></thead><tbody>' + (rows || '<tr><td colspan="5">' + t('noSales') + '</td></tr>') + '</tbody></table></body></html>';
+
+      var win = window.open('', '_blank');
+      win.document.write(html);
+      win.document.close();
+      win.focus();
+      win.print();
+    }
+
+    function openAddForm() {
+      currentEditId = null;
+      document.getElementById('formTitle').textContent = t('addProductTitle');
+      document.getElementById('productForm').reset();
+      document.getElementById('formModal').classList.add('active');
+    }
+
+    function editProduct(id) {
+      var product = null;
+      for (var i = 0; i < products.length; i++) {
+        if (products[i].id === id) {
+          product = products[i];
+          break;
+        }
+      }
+      if (!product) return;
+      
+      currentEditId = id;
+      document.getElementById('formTitle').textContent = t('editProductTitle');
+      document.getElementById('formName').value = product.name;
+      document.getElementById('formBrand').value = product.brand;
+      document.getElementById('formCode').value = product.code || '';
+      document.getElementById('formPurchasePrice').value = product.purchasePrice || '';
+      document.getElementById('formSalePrice').value = product.salePrice || '';
+      document.getElementById('formMargin').value = product.margin || '';
+      document.getElementById('formQuantity').value = product.quantity || '';
+      document.getElementById('formNotes').value = product.notes || '';
+      document.getElementById('formModal').classList.add('active');
+    }
+
+    function deleteProduct(id) {
+      if (!confirm(t('deleteConfirm'))) return;
+      var filtered = [];
+      for (var i = 0; i < products.length; i++) {
+        if (products[i].id !== id) {
+          filtered.push(products[i]);
+        }
+      }
+      products = filtered;
+      selectedProducts.delete(id);
+      saveAll();
+      renderProducts();
+      showAlert(t('deleteSuccess'), 'success');
+    }
+
+    function saveProduct(event) {
+      event.preventDefault();
+      var name = document.getElementById('formName').value.trim();
+      var brand = document.getElementById('formBrand').value.trim();
+      if (!name || !brand) {
+        var msg = language === 'ar' ? 'يرجى إدخال الاسم والعلامة التجارية' : 'Please enter name and brand';
+        return showAlert(msg, 'error');
+      }
+
+      var purchase = parseFloat(document.getElementById('formPurchasePrice').value || 0);
+      var sale = parseFloat(document.getElementById('formSalePrice').value || 0);
+      var marginInput = document.getElementById('formMargin').value;
+      var computedMargin = marginInput === '' ? (sale - purchase).toFixed(2) : marginInput;
+
+      var product = {
+        id: currentEditId || Date.now(),
+        name: name,
+        brand: brand,
+        code: document.getElementById('formCode').value,
+        purchasePrice: purchase,
+        salePrice: sale,
+        margin: parseFloat(computedMargin || 0),
+        quantity: parseInt(document.getElementById('formQuantity').value || 0),
+        notes: document.getElementById('formNotes').value
+      };
+      
+      if (currentEditId) {
+        for (var i = 0; i < products.length; i++) {
+          if (products[i].id === currentEditId) {
+            products[i] = product;
+            break;
+          }
+        }
+      } else {
+        products.push(product);
+      }
+      
+      saveAll();
+      closeForm();
+      renderAll();
+      showAlert(t('saveSuccess'), 'success');
+    }
+
+    function calculateMargin() {
+      var purchase = parseFloat(document.getElementById('formPurchasePrice').value || 0);
+      var sale = parseFloat(document.getElementById('formSalePrice').value || 0);
+      document.getElementById('formMargin').value = (sale - purchase).toFixed(2);
+    }
+
+    function closeForm() {
+      document.getElementById('formModal').classList.remove('active');
+    }
+
+    function filterProducts() {
+      renderProducts();
+    }
+
+    function exportData() {
+      var data = packState();
+      var blob = new Blob([data], { type: 'application/json' });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url;
+      a.download = 'pharma-db-' + new Date().toISOString().split('T')[0] + '.json';
+      a.click();
+      URL.revokeObjectURL(url);
+      showAlert(t('exportSuccess'), 'success');
+    }
+
+    function handleImport() {
+      var file = document.getElementById('importFile').files[0];
+      if (!file) return;
+      
+      if (!confirm(t('importConfirm'))) {
+        document.getElementById('importFile').value = '';
+        return;
+      }
+      
+      var reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          unpackState(e.target.result);
+          saveAll();
+          renderAll();
+          showAlert(t('importSuccess'), 'success');
+          document.getElementById('importFile').value = '';
+        } catch (error) {
+          showAlert('Error: ' + error.message, 'error');
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    function showAlert(message, type) {
+      var alert = document.getElementById('alert');
+      alert.textContent = message;
+      alert.className = 'alert show alert-' + type;
+      setTimeout(function() {
+        alert.classList.remove('show');
+      }, 3000);
+    }
+
+    function changePage(page, button) {
+      var pages = document.querySelectorAll('.page');
+      for (var i = 0; i < pages.length; i++) {
+        pages[i].classList.remove('active');
+      }
+      document.getElementById(page).classList.add('active');
+      var buttons = document.querySelectorAll('.nav-btn');
+      for (var i = 0; i < buttons.length; i++) {
+        buttons[i].classList.remove('active');
+      }
+      button.classList.add('active');
+    }
+
+    window.onload = function() {
+      document.getElementById('langSelect').value = language;
+      applyTranslations();
+      loadData();
+    };
+  </script>
 </body>
 </html>
