@@ -1,15 +1,16 @@
 # PharmaScanner
 
-🚀 **Aucune installation requise** - Double-cliquez sur `PharmaScanner.exe` et c'est parti !
+🚀 **Un seul fichier à télécharger !** - Double-cliquez sur `PharmaScanner.exe` et c'est parti !
 
-Application de gestion pharmaceutique avec sauvegarde de données locale en JSON.
+Application de gestion pharmaceutique autonome - crée automatiquement tous les fichiers nécessaires.
 
 ## 🎯 Utilisation
 
 ### Windows
-**Double-cliquez sur `PharmaScanner.exe`**
-- L'application s'ouvre automatiquement dans votre navigateur
-- Les données sont sauvegardées automatiquement dans `pharma-data.json`
+**Double-cliquez sur `PharmaScanner.exe`** ← C'est TOUT !
+- L'application crée automatiquement les fichiers
+- S'ouvre dans votre navigateur
+- Les données sont sauvegardées automatiquement
 
 ### Linux/macOS
 ```bash

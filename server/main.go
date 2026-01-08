@@ -1,6 +1,7 @@
 package main
 
 import (
+	"embed"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -15,6 +16,10 @@ import (
 	"time"
 )
 
+// Embarque les fichiers statiques dans le binaire
+//go:embed app-standalone.html pharma-data.json
+var embeddedFiles embed.FS
+
 type State struct {
 	V int             `json:"v"`
 	P json.RawMessage `json:"p"`
@@ -26,7 +31,11 @@ func main() {
 	cwd, err := os.Getwd()
 	if err != nil { log.Fatal(err) }
 	dataPath := filepath.Join(cwd, "pharma-data.json")
+	htmlPath := filepath.Join(cwd, "app-standalone.html")
 	addr := ":8080"
+
+	// Créer les fichiers depuis les fichiers embarqués s'ils n'existent pas
+	ensureFilesExist(htmlPath, dataPath)
 
 	// Check if port is already in use (server already running)
 	if isPortInUse(addr) {
@@ -71,7 +80,7 @@ func main() {
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		// default to app-standalone.html
-		if r.URL.Path == "/" { http.ServeFile(w, r, filepath.Join(cwd, "app-standalone.html")); return }
+		if r.URL.Path == "/" { http.ServeFile(w, r, htmlPath); return }
 		fs.ServeHTTP(w, r)
 	})
 
@@ -114,4 +123,19 @@ func openBrowser(url string) error {
 		}
 	}
 	return fmt.Errorf("unable to open browser")
+}
+
+// ensureFilesExist crée les fichiers s'ils n'existent pas
+func ensureFilesExist(htmlPath, dataPath string) {
+	// Créer app-standalone.html s'il n'existe pas
+	if _, err := os.Stat(htmlPath); os.IsNotExist(err) {
+		content, _ := embeddedFiles.ReadFile("app-standalone.html")
+		os.WriteFile(htmlPath, content, 0644)
+	}
+
+	// Créer pharma-data.json s'il n'existe pas
+	if _, err := os.Stat(dataPath); os.IsNotExist(err) {
+		content, _ := embeddedFiles.ReadFile("pharma-data.json")
+		os.WriteFile(dataPath, content, 0644)
+	}
 }
