@@ -10,11 +10,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
-	"runtime"
 	"strings"
-	"syscall"
-	"time"
-	"unsafe"
 )
 
 // Embarque les fichiers statiques dans le binaire
@@ -40,8 +36,8 @@ func main() {
 
 	// Check if port is already in use (server already running)
 	if isPortInUse(addr) {
-		// Server already running, just open browser
-		_ = openBrowser("http://localhost" + addr)
+		// Server already running
+		fmt.Println("📍 Serveur déjà lancé. Accédez à: http://localhost" + addr)
 		return
 	}
 
@@ -87,11 +83,10 @@ func main() {
 
 	fmt.Println("Pharma Scanner server running on http://localhost" + addr)
 	fmt.Println("Data file:", dataPath)
-	go func() {
-		// Give server a brief moment to start, then open the default browser.
-		time.Sleep(400 * time.Millisecond)
-		_ = openBrowser("http://localhost" + addr)
-	}()
+	fmt.Println("")
+	fmt.Println("📍 Ouvrez votre navigateur à: http://localhost:8080")
+	fmt.Println("")
+	
 	log.Fatal(http.ListenAndServe(addr, nil))
 }
 
@@ -103,56 +98,6 @@ func isPortInUse(addr string) bool {
 	}
 	ln.Close()
 	return false
-}
-
-// openBrowser utilise l'API Windows native au lieu de exec.Command
-func openBrowser(url string) error {
-	if runtime.GOOS == "windows" {
-		// Utiliser ShellExecuteW (API Windows native) au lieu de rundll32/cmd
-		return shellExecute(url)
-	}
-	// Pour Linux/Mac, on ne fait rien (utilisateur ouvre manuellement)
-	fmt.Println("Ouvrez votre navigateur à:", url)
-	return nil
-}
-
-// shellExecute appelle directement l'API Windows sans passer par exec
-func shellExecute(url string) error {
-	if runtime.GOOS != "windows" {
-		return nil
-	}
-	
-	// Charger shell32.dll
-	shell32, err := syscall.LoadDLL("shell32.dll")
-	if err != nil {
-		return err
-	}
-	defer shell32.Release()
-	
-	// Obtenir ShellExecuteW
-	shellExecute, err := shell32.FindProc("ShellExecuteW")
-	if err != nil {
-		return err
-	}
-	
-	// Convertir string en UTF16
-	urlPtr, _ := syscall.UTF16PtrFromString(url)
-	operationPtr, _ := syscall.UTF16PtrFromString("open")
-	
-	// Appeler ShellExecuteW directement
-	ret, _, _ := shellExecute.Call(
-		0,                           // hwnd
-		uintptr(unsafe.Pointer(operationPtr)), // operation
-		uintptr(unsafe.Pointer(urlPtr)),       // file
-		0,                           // parameters
-		0,                           // directory
-		1,                           // show command (SW_SHOWNORMAL)
-	)
-	
-	if ret <= 32 {
-		return fmt.Errorf("failed to open browser")
-	}
-	return nil
 }
 
 // ensureFilesExist crée les fichiers s'ils n'existent pas
