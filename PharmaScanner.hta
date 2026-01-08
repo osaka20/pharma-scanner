@@ -2,6 +2,7 @@
 <html lang="en" dir="ltr">
 <head>
   <meta charset="UTF-8">
+  <meta http-equiv="x-ua-compatible" content="IE=11" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Pharma Scanner</title>
   <HTA:APPLICATION 
@@ -223,14 +224,21 @@
     var appPath = fso.GetParentFolderName(location.pathname.replace(/^\//, ""));
     var dataFilePath = fso.BuildPath(appPath, "pharma-data.json");
 
-    let products = [];
-    let sales = [];
-    let currentEditId = null;
-    let language = localStorage.getItem('lang') || 'en';
-    let marginOffset = parseFloat(localStorage.getItem('pharmaMarginOffset') || 0);
-    let selectedProducts = new Set();
+    var products = [];
+    var sales = [];
+    var currentEditId = null;
+    var language = window.localStorage ? (localStorage.getItem('lang') || 'en') : 'en';
+    var marginOffset = window.localStorage ? parseFloat(localStorage.getItem('pharmaMarginOffset') || 0) : 0;
+    var selectedProducts = {};
 
-    const translations = {
+    function addSelected(id) { selectedProducts[id] = true; }
+    function removeSelected(id) { delete selectedProducts[id]; }
+    function isSelected(id) { return !!selectedProducts[id]; }
+    function selectedCount() { var c=0; for (var k in selectedProducts) { if (selectedProducts.hasOwnProperty(k)) c++; } return c; }
+    function clearSelected() { selectedProducts = {}; }
+    function selectedList() { var arr=[]; for (var k in selectedProducts) { if (selectedProducts.hasOwnProperty(k)) arr.push(parseInt(k,10)); } return arr; }
+
+    var translations = {
       en: {
         appTitle: 'Pharma Scanner',
         dashboard: 'Dashboard',
@@ -393,19 +401,98 @@
       }
     };
 
+    function t(key) {
+      if (translations[language] && translations[language][key]) { return translations[language][key]; }
+      return key;
+    }
+
+    function applyTranslations() {
+      var nodes = document.querySelectorAll('[data-translate]');
+      for (var i = 0; i < nodes.length; i++) {
+        var k = nodes[i].getAttribute('data-translate');
+        nodes[i].innerText = t(k);
+      }
+      var ph = document.querySelectorAll('[data-translate-placeholder]');
+      for (var j = 0; j < ph.length; j++) {
+        var k2 = ph[j].getAttribute('data-translate-placeholder');
+        ph[j].setAttribute('placeholder', t(k2));
+      }
+      document.documentElement.setAttribute('dir', language === 'ar' ? 'rtl' : 'ltr');
+      document.documentElement.setAttribute('lang', language);
+    }
+
+    function changeLanguage() {
+      language = document.getElementById('langSelect').value;
+      if (window.localStorage) localStorage.setItem('lang', language);
+      applyTranslations();
+      renderAll();
+    }
+
+    function packState() {
+      var pArr = [];
+      for (var i = 0; i < products.length; i++) {
+        var p = products[i];
+        pArr.push({ i: p.id, n: p.name, b: p.brand, c: p.code, bp: p.purchasePrice, sp: p.salePrice, m: p.margin, q: p.quantity, no: p.notes });
+      }
+      var sArr = [];
+      for (var j = 0; j < sales.length; j++) {
+        var s = sales[j];
+        sArr.push([s.date, s.productId, s.marginTotal, s.type === 'undo' ? 'u' : 's', s.undone ? 1 : 0, s.qty || 1]);
+      }
+      return JSON.stringify({ v:2, p:pArr, s:sArr, o: marginOffset });
+    }
+
+    function unpackState(text) {
+      var data = JSON.parse(text);
+      if (data.v === 2) {
+        products = [];
+        for (var i = 0; i < (data.p || []).length; i++) {
+          var p = data.p[i];
+          products.push({
+            id: p.i,
+            name: p.n,
+            brand: p.b,
+            code: p.c,
+            purchasePrice: p.bp,
+            salePrice: p.sp,
+            margin: p.m,
+            quantity: p.q,
+            notes: p.no || ''
+          });
+        }
+        sales = [];
+        for (var j = 0; j < (data.s || []).length; j++) {
+          var s = data.s[j];
+          sales.push({
+            date: s[0],
+            productId: s[1],
+            marginTotal: s[2],
+            type: s[3] === 'u' ? 'undo' : 'sale',
+            undone: !!s[4],
+            qty: s[5] || 1,
+            productName: ''
+          });
+        }
+        marginOffset = parseFloat(data.o || 0) || 0;
+      } else {
+        products = data.products || [];
+        sales = data.sales || [];
+        marginOffset = parseFloat(data.marginOffset || 0) || 0;
+      }
+      var names = {};
+      for (var k = 0; k < products.length; k++) { names[products[k].id] = products[k].name; }
+      for (var h = 0; h < sales.length; h++) {
+        sales[h].productName = names[sales[h].productId] || '(deleted)';
+      }
+    }
+
     function loadData() {
       try {
         if (fso.FileExists(dataFilePath)) {
           var file = fso.OpenTextFile(dataFilePath, 1, false, -1);
           var content = file.ReadAll();
           file.Close();
-          if (content && content.trim()) {
-            unpackState(content);
-          } else {
-            products = [];
-            sales = [];
-            marginOffset = 0;
-          }
+          if (content && content.replace(/\s+/g,'') !== '') { unpackState(content); }
         } else {
           products = [];
           sales = [];
@@ -431,110 +518,30 @@
       }
     }
 
-    function packState() {
-      return JSON.stringify({
-        v: 2,
-        p: products.map(p => ({ i: p.id, n: p.name, b: p.brand, c: p.code, bp: p.purchasePrice, sp: p.salePrice, m: p.margin, q: p.quantity, no: p.notes })),
-        s: sales.map(s => [s.date, s.productId, s.marginTotal, s.type === 'undo' ? 'u' : 's', s.undone ? 1 : 0, s.qty || 1]),
-        o: marginOffset
-      });
-    }
-
-    function unpackState(text) {
-      try {
-        var data = JSON.parse(text);
-        if (data.v === 2) {
-          products = (data.p || []).map(p => ({
-            id: p.i,
-            name: p.n,
-            brand: p.b,
-            code: p.c,
-            purchasePrice: p.bp,
-            salePrice: p.sp,
-            margin: p.m,
-            quantity: p.q,
-            notes: p.no || ''
-          }));
-          sales = (data.s || []).map(s => ({
-            date: s[0],
-            productId: s[1],
-            marginTotal: s[2],
-            type: s[3] === 'u' ? 'undo' : 'sale',
-            undone: !!s[4],
-            qty: s[5] || 1,
-            productName: ''
-          }));
-          marginOffset = parseFloat(data.o || 0) || 0;
-        } else {
-          products = data.products || [];
-          sales = data.sales || [];
-          marginOffset = parseFloat(data.marginOffset || 0) || 0;
-        }
-        var names = {};
-        for (var i = 0; i < products.length; i++) {
-          names[products[i].id] = products[i].name;
-        }
-        for (var i = 0; i < sales.length; i++) {
-          sales[i].productName = names[sales[i].productId] || '(deleted)';
-        }
-      } catch (e) {
-        console.log('Parse error:', e.message);
-      }
-    }
-
-    function t(key) {
-      return translations[language] && translations[language][key] ? translations[language][key] : key;
-    }
-
-    function applyTranslations() {
-      var els = document.querySelectorAll('[data-translate]');
-      for (var i = 0; i < els.length; i++) {
-        var key = els[i].getAttribute('data-translate');
-        els[i].textContent = t(key);
-      }
-      
-      var pls = document.querySelectorAll('[data-translate-placeholder]');
-      for (var i = 0; i < pls.length; i++) {
-        var key = pls[i].getAttribute('data-translate-placeholder');
-        pls[i].placeholder = t(key);
-      }
-
-      document.documentElement.setAttribute('dir', language === 'ar' ? 'rtl' : 'ltr');
-      document.documentElement.setAttribute('lang', language);
-    }
-
-    function changeLanguage() {
-      language = document.getElementById('langSelect').value;
-      localStorage.setItem('lang', language);
-      applyTranslations();
-      renderAll();
-    }
+    function formatEuro(v) { return parseFloat(v || 0).toFixed(2) + '€'; }
 
     function renderDashboard() {
       var total = products.length;
       var value = 0;
-      for (var i = 0; i < products.length; i++) {
-        value += (parseFloat(products[i].salePrice || 0) * parseFloat(products[i].quantity || 0));
-      }
+      for (var i = 0; i < products.length; i++) { value += (parseFloat(products[i].salePrice || 0) * parseFloat(products[i].quantity || 0)); }
       var marginRaw = 0;
-      for (var i = 0; i < sales.length; i++) {
-        marginRaw += parseFloat(sales[i].marginTotal || 0);
-      }
-      var margin = marginRaw - marginOffset;
-      
-      document.getElementById('totalProducts').textContent = total;
-      document.getElementById('totalValue').textContent = value.toFixed(2) + '€';
-      document.getElementById('totalMargin').textContent = margin.toFixed(2) + '€';
-      
-      var recent = products.slice(-5).reverse();
+      for (var j = 0; j < sales.length; j++) { marginRaw += parseFloat(sales[j].marginTotal || 0); }
+      var marginVal = marginRaw - marginOffset;
+      document.getElementById('totalProducts').innerText = total;
+      document.getElementById('totalValue').innerText = formatEuro(value);
+      document.getElementById('totalMargin').innerText = formatEuro(marginVal);
+
+      var recent = products.slice(Math.max(products.length - 5, 0)).reverse();
       var html = '';
-      if (recent.length) {
-        for (var i = 0; i < recent.length; i++) {
-          var p = recent[i];
-          html += '<tr><td>' + p.name + '</td><td>' + p.brand + '</td><td>' + parseFloat(p.salePrice || 0).toFixed(2) + '€</td><td class="' + (parseFloat(p.margin || 0) < 0 ? 'margin-negative' : '') + '">' + parseFloat(p.margin || 0).toFixed(2) + '€</td><td>' + (p.quantity || 0) + '</td></tr>';
-        }
-      } else {
+      if (recent.length === 0) {
         html = '<tr><td colspan="5" style="text-align: center; color: #999;">' + t('noProducts') + '</td></tr>';
+      } else {
+        for (var r = 0; r < recent.length; r++) {
+          var p = recent[r];
+          html += '<tr><td>' + p.name + '</td><td>' + p.brand + '</td><td>' + formatEuro(p.salePrice) + '</td>' +
+                  '<td class="' + (parseFloat(p.margin || 0) < 0 ? 'margin-negative' : '') + '">' + formatEuro(p.margin) + '</td>' +
+                  '<td>' + (p.quantity || 0) + '</td></tr>';
+        }
       }
       document.getElementById('recentProducts').innerHTML = html;
     }
@@ -545,13 +552,13 @@
       var searchEl = document.getElementById('historySearch');
       var start = startEl && startEl.value ? new Date(startEl.value) : null;
       var end = endEl && endEl.value ? new Date(endEl.value) : null;
-      var term = (searchEl && searchEl.value ? searchEl.value : '').toLowerCase();
+      var term = searchEl && searchEl.value ? searchEl.value.toLowerCase() : '';
 
-      var filtered = [];
+      var res = [];
       for (var i = 0; i < sales.length; i++) {
         var sale = sales[i];
         var d = new Date(sale.date);
-        if (start && d < new Date(start.getTime())) continue;
+        if (start && d < start) continue;
         if (end) {
           var endDay = new Date(end);
           endDay.setHours(23,59,59,999);
@@ -559,30 +566,31 @@
         }
         var name = (sale.productName || '').toLowerCase();
         var type = (sale.type || 'sale').toLowerCase();
-        if (name.indexOf(term) !== -1 || type.indexOf(term) !== -1) {
-          filtered.push(sale);
+        if (term === '' || name.indexOf(term) !== -1 || type.indexOf(term) !== -1) {
+          res.push(sale);
         }
       }
-      filtered.sort(function(a, b) { return new Date(b.date) - new Date(a.date); });
-      return filtered;
+      res.sort(function(a,b){ return new Date(b.date) - new Date(a.date); });
+      return res;
     }
 
     function renderHistory() {
       var list = getFilteredSales();
       var html = '';
-      if (list.length) {
+      if (list.length === 0) {
+        html = '<tr><td colspan="5" style="text-align: center; color: #999;">' + t('noSales') + '</td></tr>';
+      } else {
         for (var i = 0; i < list.length; i++) {
           var sale = list[i];
-          var date = new Date(sale.date);
-          var formatted = date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+          var d = new Date(sale.date);
+          var formatted = d.toLocaleDateString() + ' ' + d.toLocaleTimeString();
           var marginVal = parseFloat(sale.marginTotal || 0);
           var typeLabel = sale.type === 'undo' ? t('undoType') : t('sale');
-          var qty = sale.type === 'undo' ? '+' + (sale.qty || 1) : '-' + (sale.qty || 1);
-          var marginClass = marginVal < 0 ? 'margin-negative' : '';
-          html += '<tr><td>' + formatted + '</td><td>' + sale.productName + '</td><td class="' + marginClass + '">' + marginVal.toFixed(2) + '€</td><td>' + qty + '</td><td>' + typeLabel + '</td></tr>';
+          var qtyTxt = sale.type === 'undo' ? '+' + (sale.qty || 1) : '-' + (sale.qty || 1);
+          html += '<tr><td>' + formatted + '</td><td>' + sale.productName + '</td>' +
+                  '<td class="' + (marginVal < 0 ? 'margin-negative' : '') + '">' + formatEuro(marginVal) + '</td>' +
+                  '<td>' + qtyTxt + '</td><td>' + typeLabel + '</td></tr>';
         }
-      } else {
-        html = '<tr><td colspan="5" style="text-align: center; color: #999;">' + t('noSales') + '</td></tr>';
       }
       document.getElementById('historyList').innerHTML = html;
     }
@@ -600,136 +608,106 @@
 
     function renderProducts() {
       var searchEl = document.getElementById('searchInput');
-      var search = (searchEl && searchEl.value ? searchEl.value : '').toLowerCase();
+      var search = searchEl && searchEl.value ? searchEl.value.toLowerCase() : '';
       var filtered = [];
       for (var i = 0; i < products.length; i++) {
         var p = products[i];
-        var name = (p && p.name ? p.name : '').toLowerCase();
-        var brand = (p && p.brand ? p.brand : '').toLowerCase();
-        var code = (p && p.code ? p.code : '').toLowerCase();
-        if (name.indexOf(search) !== -1 || brand.indexOf(search) !== -1 || code.indexOf(search) !== -1) {
+        var name = (p.name || '').toLowerCase();
+        var brand = (p.brand || '').toLowerCase();
+        var code = (p.code || '').toLowerCase();
+        if (search === '' || name.indexOf(search) !== -1 || brand.indexOf(search) !== -1 || code.indexOf(search) !== -1) {
           filtered.push(p);
         }
       }
-      
       var html = '';
-      if (filtered.length) {
-        for (var i = 0; i < filtered.length; i++) {
-          var p = filtered[i];
-          var hasUndo = false;
-          for (var j = 0; j < sales.length; j++) {
-            var s = sales[j];
-            if (s.productId === p.id && s.type === 'sale' && !s.undone) {
-              hasUndo = true;
-              break;
-            }
-          }
-          var checked = selectedProducts.has(p.id) ? 'checked' : '';
-          html += '<tr><td style="text-align:center;"><input type="checkbox" ' + checked + ' onchange="toggleSelect(' + p.id + ', this.checked)"></td>';
-          html += '<td>' + p.name + '</td><td>' + p.brand + '</td><td>' + parseFloat(p.purchasePrice || 0).toFixed(2) + '€</td>';
-          html += '<td>' + parseFloat(p.salePrice || 0).toFixed(2) + '€</td>';
-          html += '<td class="' + (parseFloat(p.margin || 0) < 0 ? 'margin-negative' : '') + '">' + parseFloat(p.margin || 0).toFixed(2) + '€</td>';
-          html += '<td>' + (p.quantity || 0) + '</td>';
-          html += '<td><input type="number" id="sellQty-' + p.id + '" min="1" step="1" value="1" style="width:70px; padding:0.2rem; border:1px solid #ccc; border-radius:4px;"></td>';
-          html += '<td class="actions">';
-          html += '<button class="sale-btn" onclick="sellProduct(' + p.id + ')" ' + (p.quantity <= 0 ? 'disabled' : '') + '>' + t('sell') + '</button>';
-          html += '<button class="undo-btn" onclick="undoSale(' + p.id + ')" ' + (!hasUndo ? 'disabled' : '') + '>' + t('undo') + '</button>';
-          html += '<button class="btn btn-secondary" onclick="editProduct(' + p.id + ')">' + t('edit') + '</button>';
-          html += '<button class="btn btn-danger" onclick="deleteProduct(' + p.id + ')">' + t('delete') + '</button>';
-          html += '</td></tr>';
-        }
-      } else {
+      if (filtered.length === 0) {
         html = '<tr><td colspan="9" style="text-align: center; color: #999;">' + t('noProducts') + '</td></tr>';
+      } else {
+        for (var j = 0; j < filtered.length; j++) {
+          var p2 = filtered[j];
+          var hasUndo = false;
+          for (var s = 0; s < sales.length; s++) {
+            if (sales[s].productId === p2.id && sales[s].type === 'sale' && !sales[s].undone) { hasUndo = true; break; }
+          }
+          var checked = isSelected(p2.id) ? 'checked' : '';
+          html += '<tr>' +
+            '<td style="text-align:center;"><input type="checkbox" '+checked+' onchange="toggleSelect('+p2.id+', this.checked)"></td>' +
+            '<td>'+p2.name+'</td><td>'+p2.brand+'</td><td>'+formatEuro(p2.purchasePrice)+'</td>' +
+            '<td>'+formatEuro(p2.salePrice)+'</td>' +
+            '<td class="'+(parseFloat(p2.margin || 0) < 0 ? 'margin-negative':'')+'">'+formatEuro(p2.margin)+'</td>' +
+            '<td>'+(p2.quantity || 0)+'</td>' +
+            '<td><input type="number" id="sellQty-'+p2.id+'" min="1" step="1" value="1" style="width:70px; padding:0.2rem; border:1px solid #ccc; border-radius:4px;"></td>' +
+            '<td class="actions">' +
+              '<button class="sale-btn" onclick="sellProduct('+p2.id+')" '+(p2.quantity<=0?'disabled':'')+'>'+t('sell')+'</button>' +
+              '<button class="undo-btn" onclick="undoSale('+p2.id+')" '+(!hasUndo?'disabled':'')+'>'+t('undo')+'</button>' +
+              '<button class="btn btn-secondary" onclick="editProduct('+p2.id+')">'+t('edit')+'</button>' +
+              '<button class="btn btn-danger" onclick="deleteProduct('+p2.id+')">'+t('delete')+'</button>' +
+            '</td>' +
+          '</tr>';
+        }
       }
       document.getElementById('productsList').innerHTML = html;
       var selectAllEl = document.getElementById('selectAllCheckbox');
       if (selectAllEl) {
         var allSelected = filtered.length > 0;
-        for (var i = 0; i < filtered.length; i++) {
-          if (!selectedProducts.has(filtered[i].id)) {
-            allSelected = false;
-            break;
-          }
-        }
+        for (var q = 0; q < filtered.length; q++) { if (!isSelected(filtered[q].id)) { allSelected = false; break; } }
         selectAllEl.checked = allSelected;
       }
     }
 
     function toggleSelect(id, checked) {
-      if (checked) {
-        selectedProducts.add(id);
-      } else {
-        selectedProducts.delete(id);
-      }
+      if (checked) addSelected(id); else removeSelected(id);
     }
 
     function toggleSelectAll(checked) {
-      if (checked) {
-        for (var i = 0; i < products.length; i++) {
-          selectedProducts.add(products[i].id);
-        }
-      } else {
-        selectedProducts.clear();
-      }
+      if (checked) { for (var i = 0; i < products.length; i++) addSelected(products[i].id); }
+      else { clearSelected(); }
       renderProducts();
     }
 
     function bulkDelete() {
-      if (selectedProducts.size === 0) return showAlert(t('selectionNone'), 'error');
+      if (selectedCount() === 0) return showAlert(t('selectionNone'), 'error');
       var filtered = [];
-      for (var i = 0; i < products.length; i++) {
-        if (!selectedProducts.has(products[i].id)) {
-          filtered.push(products[i]);
-        }
-      }
+      for (var i = 0; i < products.length; i++) { if (!isSelected(products[i].id)) filtered.push(products[i]); }
       products = filtered;
-      selectedProducts.clear();
+      clearSelected();
       saveAll();
       renderProducts();
       showAlert(t('deleteSuccess'), 'success');
     }
 
     function openBulkQtyModal() {
-      if (selectedProducts.size === 0) return showAlert(t('selectionNone'), 'error');
-      var selectedList = [];
-      for (var i = 0; i < products.length; i++) {
-        if (selectedProducts.has(products[i].id)) {
-          selectedList.push(products[i]);
-        }
+      if (selectedCount() === 0) return showAlert(t('selectionNone'), 'error');
+      var list = [];
+      for (var i = 0; i < products.length; i++) { if (isSelected(products[i].id)) list.push(products[i]); }
+      document.getElementById('bulkSelectedCount').innerText = list.length;
+      var html = '';
+      for (var j = 0; j < list.length; j++) {
+        var p = list[j];
+        html += '<div style="padding: 0.25rem 0; border-bottom: 1px solid #ddd;">'+p.name+' - '+p.brand+' ('+t('quantity')+': '+p.quantity+')</div>';
       }
-      document.getElementById('bulkSelectedCount').textContent = selectedList.length;
-      var listHtml = '';
-      for (var i = 0; i < selectedList.length; i++) {
-        var p = selectedList[i];
-        listHtml += '<div style="padding: 0.25rem 0; border-bottom: 1px solid #ddd;">' + p.name + ' - ' + p.brand + ' (' + t('quantity') + ': ' + p.quantity + ')</div>';
-      }
-      document.getElementById('bulkSelectedList').innerHTML = listHtml;
+      document.getElementById('bulkSelectedList').innerHTML = html;
       document.getElementById('bulkQtyInput').value = 0;
       document.getElementById('bulkQtyModal').classList.add('active');
     }
 
-    function closeBulkQtyModal() {
-      document.getElementById('bulkQtyModal').classList.remove('active');
-    }
+    function closeBulkQtyModal() { document.getElementById('bulkQtyModal').classList.remove('active'); }
 
     function confirmBulkSetQuantity() {
-      var qty = parseInt(document.getElementById('bulkQtyInput').value || 0);
+      var qty = parseInt(document.getElementById('bulkQtyInput').value || 0,10);
       if (isNaN(qty) || qty < 0) return showAlert(t('stockError'), 'error');
-      if (!confirm(t('bulkQtyConfirm').replace('{{qty}}', qty).replace('{{count}}', selectedProducts.size))) return;
-      for (var i = 0; i < products.length; i++) {
-        if (selectedProducts.has(products[i].id)) {
-          products[i].quantity = qty;
-        }
-      }
-      selectedProducts.clear();
+      var msg = t('bulkQtyConfirm').replace('{{qty}}', qty).replace('{{count}}', selectedCount());
+      if (!window.confirm(msg)) return;
+      for (var i = 0; i < products.length; i++) { if (isSelected(products[i].id)) products[i].quantity = qty; }
+      clearSelected();
       closeBulkQtyModal();
       saveAll();
       renderProducts();
       showAlert(t('saveSuccess'), 'success');
     }
 
-    function renderAll() { 
-      renderDashboard(); 
+    function renderAll() {
+      renderDashboard();
       renderProducts();
       renderHistory();
       applyTranslations();
@@ -737,33 +715,17 @@
 
     function sellProduct(id) {
       var product = null;
-      for (var i = 0; i < products.length; i++) {
-        if (products[i].id === id) {
-          product = products[i];
-          break;
-        }
-      }
+      for (var i = 0; i < products.length; i++) { if (products[i].id === id) { product = products[i]; break; } }
       if (!product) return;
-      var qtyInput = document.getElementById('sellQty-' + id);
-      var qty = parseInt(qtyInput && qtyInput.value ? qtyInput.value : 1);
+      var qtyInput = document.getElementById('sellQty-'+id);
+      var qty = parseInt(qtyInput && qtyInput.value ? qtyInput.value : 1, 10);
       if (isNaN(qty) || qty <= 0) return showAlert(t('stockError'), 'error');
       if (product.quantity < qty) return showAlert(t('stockError'), 'error');
-
       product.quantity -= qty;
       var marginPerUnit = parseFloat(product.margin || 0);
-      var sale = {
-        id: Date.now(),
-        productId: id,
-        productName: product.name,
-        marginTotal: marginPerUnit * qty,
-        qty: qty,
-        date: new Date().toISOString(),
-        type: 'sale',
-        undone: false
-      };
+      var sale = { id: Date.now(), productId: id, productName: product.name, marginTotal: marginPerUnit * qty, qty: qty, date: new Date().toISOString(), type: 'sale', undone: false };
       sales.push(sale);
       if (qtyInput) qtyInput.value = 1;
-      
       saveAll();
       renderAll();
       showAlert(t('saleSuccess') + (marginPerUnit * qty).toFixed(2) + '€', 'success');
@@ -771,53 +733,27 @@
 
     function undoSale(id) {
       var product = null;
-      for (var i = 0; i < products.length; i++) {
-        if (products[i].id === id) {
-          product = products[i];
-          break;
-        }
-      }
+      for (var i = 0; i < products.length; i++) { if (products[i].id === id) { product = products[i]; break; } }
       if (!product) return;
-      
       var lastSaleIndex = -1;
-      for (var i = sales.length - 1; i >= 0; i--) {
-        var s = sales[i];
-        if (s.productId === id && s.type === 'sale' && !s.undone) {
-          lastSaleIndex = i;
-          break;
-        }
-      }
-      if (lastSaleIndex === -1) {
-        return showAlert(t('noSaleToUndo'), 'error');
-      }
-
+      for (var j = sales.length - 1; j >= 0; j--) { if (sales[j].productId === id && sales[j].type === 'sale' && !sales[j].undone) { lastSaleIndex = j; break; } }
+      if (lastSaleIndex === -1) return showAlert(t('noSaleToUndo'), 'error');
       var lastSale = sales[lastSaleIndex];
       var qty = lastSale.qty || 1;
       product.quantity += qty;
       sales[lastSaleIndex].undone = true;
-      sales.push({
-        id: Date.now(),
-        productId: id,
-        productName: product.name,
-        marginTotal: -Math.abs(parseFloat(lastSale.marginTotal || 0)),
-        qty: qty,
-        date: new Date().toISOString(),
-        type: 'undo'
-      });
-      
+      sales.push({ id: Date.now(), productId: id, productName: product.name, marginTotal: -Math.abs(parseFloat(lastSale.marginTotal || 0)), qty: qty, date: new Date().toISOString(), type: 'undo' });
       saveAll();
       renderAll();
       showAlert(t('undoSuccess'), 'success');
     }
 
     function resetMargin() {
-      if (!confirm(t('resetConfirm'))) return;
+      if (!window.confirm(t('resetConfirm'))) return;
       var totalMargin = 0;
-      for (var i = 0; i < sales.length; i++) {
-        totalMargin += parseFloat(sales[i].marginTotal || 0);
-      }
+      for (var i = 0; i < sales.length; i++) { totalMargin += parseFloat(sales[i].marginTotal || 0); }
       marginOffset = totalMargin;
-      localStorage.setItem('pharmaMarginOffset', marginOffset);
+      if (window.localStorage) localStorage.setItem('pharmaMarginOffset', marginOffset);
       saveAll();
       renderAll();
       showAlert(t('resetSuccess'), 'success');
@@ -826,31 +762,26 @@
     function exportHistoryPDF() {
       var list = getFilteredSales();
       var totalRawMargin = 0;
-      for (var i = 0; i < list.length; i++) {
-        totalRawMargin += parseFloat(list[i].marginTotal || 0);
-      }
+      for (var i = 0; i < list.length; i++) { totalRawMargin += parseFloat(list[i].marginTotal || 0); }
       var startEl = document.getElementById('historyStart');
       var endEl = document.getElementById('historyEnd');
       var rangeText = (startEl && startEl.value ? startEl.value : '...') + ' → ' + (endEl && endEl.value ? endEl.value : '...');
-
       var rows = '';
-      for (var i = 0; i < list.length; i++) {
-        var sale = list[i];
+      for (var j = 0; j < list.length; j++) {
+        var sale = list[j];
         var d = new Date(sale.date);
         var formatted = d.toLocaleDateString() + ' ' + d.toLocaleTimeString();
         var marginVal = parseFloat(sale.marginTotal || 0);
         var typeLabel = sale.type === 'undo' ? t('undoType') : t('sale');
-        var qty = sale.type === 'undo' ? '+' + (sale.qty || 1) : '-' + (sale.qty || 1);
+        var qtyTxt = sale.type === 'undo' ? '+' + (sale.qty || 1) : '-' + (sale.qty || 1);
         var marginTxt = marginVal.toFixed(2) + '€';
-        rows += '<tr><td>' + formatted + '</td><td>' + sale.productName + '</td><td>' + qty + '</td><td>' + typeLabel + '</td><td>' + marginTxt + '</td></tr>';
+        rows += '<tr><td>'+formatted+'</td><td>'+sale.productName+'</td><td>'+qtyTxt+'</td><td>'+typeLabel+'</td><td>'+marginTxt+'</td></tr>';
       }
-
-      var html = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>History PDF</title><style>body { font-family: Arial, sans-serif; padding: 20px; } h2 { margin-bottom: 0.2rem; } p { margin: 0.1rem 0 1rem 0; } table { width: 100%; border-collapse: collapse; margin-top: 1rem; } th, td { border: 1px solid #ccc; padding: 8px; text-align: left; } th { background: #f5f5f5; }</style></head><body>';
-      html += '<h2>' + t('historyTitle') + '</h2>';
-      html += '<p>' + t('saleDate') + ': ' + rangeText + '</p>';
-      html += '<p>' + t('saleMargin') + ': ' + totalRawMargin.toFixed(2) + '€</p>';
-      html += '<table><thead><tr><th>' + t('saleDate') + '</th><th>' + t('saleProduct') + '</th><th>' + t('saleQuantity') + '</th><th>' + t('saleType') + '</th><th>' + t('saleMargin') + '</th></tr></thead><tbody>' + (rows || '<tr><td colspan="5">' + t('noSales') + '</td></tr>') + '</tbody></table></body></html>';
-
+      var html = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>History PDF</title><style>body{font-family:Arial,sans-serif;padding:20px;}h2{margin-bottom:0.2rem;}p{margin:0.1rem 0 1rem 0;}table{width:100%;border-collapse:collapse;margin-top:1rem;}th,td{border:1px solid #ccc;padding:8px;text-align:left;}th{background:#f5f5f5;}</style></head><body>' +
+        '<h2>'+t('historyTitle')+'</h2>' +
+        '<p>'+t('saleDate')+': '+rangeText+'</p>' +
+        '<p>'+t('saleMargin')+': '+totalRawMargin.toFixed(2)+'€</p>' +
+        '<table><thead><tr><th>'+t('saleDate')+'</th><th>'+t('saleProduct')+'</th><th>'+t('saleQuantity')+'</th><th>'+t('saleType')+'</th><th>'+t('saleMargin')+'</th></tr></thead><tbody>' + (rows || '<tr><td colspan="5">'+t('noSales')+'</td></tr>') + '</tbody></table></body></html>';
       var win = window.open('', '_blank');
       win.document.write(html);
       win.document.close();
@@ -860,23 +791,17 @@
 
     function openAddForm() {
       currentEditId = null;
-      document.getElementById('formTitle').textContent = t('addProductTitle');
+      document.getElementById('formTitle').innerText = t('addProductTitle');
       document.getElementById('productForm').reset();
       document.getElementById('formModal').classList.add('active');
     }
 
     function editProduct(id) {
       var product = null;
-      for (var i = 0; i < products.length; i++) {
-        if (products[i].id === id) {
-          product = products[i];
-          break;
-        }
-      }
+      for (var i = 0; i < products.length; i++) { if (products[i].id === id) { product = products[i]; break; } }
       if (!product) return;
-      
       currentEditId = id;
-      document.getElementById('formTitle').textContent = t('editProductTitle');
+      document.getElementById('formTitle').innerText = t('editProductTitle');
       document.getElementById('formName').value = product.name;
       document.getElementById('formBrand').value = product.brand;
       document.getElementById('formCode').value = product.code || '';
@@ -889,34 +814,28 @@
     }
 
     function deleteProduct(id) {
-      if (!confirm(t('deleteConfirm'))) return;
+      if (!window.confirm(t('deleteConfirm'))) return;
       var filtered = [];
-      for (var i = 0; i < products.length; i++) {
-        if (products[i].id !== id) {
-          filtered.push(products[i]);
-        }
-      }
+      for (var i = 0; i < products.length; i++) { if (products[i].id !== id) filtered.push(products[i]); }
       products = filtered;
-      selectedProducts.delete(id);
+      removeSelected(id);
       saveAll();
       renderProducts();
       showAlert(t('deleteSuccess'), 'success');
     }
 
     function saveProduct(event) {
-      event.preventDefault();
-      var name = document.getElementById('formName').value.trim();
-      var brand = document.getElementById('formBrand').value.trim();
+      if (event && event.preventDefault) event.preventDefault();
+      var name = document.getElementById('formName').value.replace(/^\s+|\s+$/g,'');
+      var brand = document.getElementById('formBrand').value.replace(/^\s+|\s+$/g,'');
       if (!name || !brand) {
         var msg = language === 'ar' ? 'يرجى إدخال الاسم والعلامة التجارية' : 'Please enter name and brand';
         return showAlert(msg, 'error');
       }
-
       var purchase = parseFloat(document.getElementById('formPurchasePrice').value || 0);
       var sale = parseFloat(document.getElementById('formSalePrice').value || 0);
       var marginInput = document.getElementById('formMargin').value;
       var computedMargin = marginInput === '' ? (sale - purchase).toFixed(2) : marginInput;
-
       var product = {
         id: currentEditId || Date.now(),
         name: name,
@@ -925,21 +844,12 @@
         purchasePrice: purchase,
         salePrice: sale,
         margin: parseFloat(computedMargin || 0),
-        quantity: parseInt(document.getElementById('formQuantity').value || 0),
+        quantity: parseInt(document.getElementById('formQuantity').value || 0,10),
         notes: document.getElementById('formNotes').value
       };
-      
       if (currentEditId) {
-        for (var i = 0; i < products.length; i++) {
-          if (products[i].id === currentEditId) {
-            products[i] = product;
-            break;
-          }
-        }
-      } else {
-        products.push(product);
-      }
-      
+        for (var i = 0; i < products.length; i++) { if (products[i].id === currentEditId) { products[i] = product; break; } }
+      } else { products.push(product); }
       saveAll();
       closeForm();
       renderAll();
@@ -952,35 +862,22 @@
       document.getElementById('formMargin').value = (sale - purchase).toFixed(2);
     }
 
-    function closeForm() {
-      document.getElementById('formModal').classList.remove('active');
-    }
-
-    function filterProducts() {
-      renderProducts();
-    }
+    function closeForm() { document.getElementById('formModal').classList.remove('active'); }
+    function filterProducts() { renderProducts(); }
 
     function exportData() {
       var data = packState();
-      var blob = new Blob([data], { type: 'application/json' });
-      var url = URL.createObjectURL(blob);
-      var a = document.createElement('a');
-      a.href = url;
-      a.download = 'pharma-db-' + new Date().toISOString().split('T')[0] + '.json';
-      a.click();
-      URL.revokeObjectURL(url);
+      var f = fso.CreateTextFile(fso.BuildPath(appPath, 'pharma-export-' + new Date().toISOString().split('T')[0] + '.json'), true, true);
+      f.Write(data);
+      f.Close();
       showAlert(t('exportSuccess'), 'success');
     }
 
     function handleImport() {
-      var file = document.getElementById('importFile').files[0];
+      var fileInput = document.getElementById('importFile');
+      var file = fileInput.files[0];
       if (!file) return;
-      
-      if (!confirm(t('importConfirm'))) {
-        document.getElementById('importFile').value = '';
-        return;
-      }
-      
+      if (!window.confirm(t('importConfirm'))) { fileInput.value = ''; return; }
       var reader = new FileReader();
       reader.onload = function(e) {
         try {
@@ -988,38 +885,31 @@
           saveAll();
           renderAll();
           showAlert(t('importSuccess'), 'success');
-          document.getElementById('importFile').value = '';
-        } catch (error) {
-          showAlert('Error: ' + error.message, 'error');
-        }
+          fileInput.value = '';
+        } catch (err) { showAlert('Error: ' + err.message, 'error'); }
       };
       reader.readAsText(file);
     }
 
     function showAlert(message, type) {
       var alert = document.getElementById('alert');
-      alert.textContent = message;
+      alert.innerText = message;
       alert.className = 'alert show alert-' + type;
-      setTimeout(function() {
-        alert.classList.remove('show');
-      }, 3000);
+      setTimeout(function(){ alert.classList.remove('show'); }, 3000);
     }
 
     function changePage(page, button) {
       var pages = document.querySelectorAll('.page');
-      for (var i = 0; i < pages.length; i++) {
-        pages[i].classList.remove('active');
-      }
+      for (var i = 0; i < pages.length; i++) { pages[i].classList.remove('active'); }
       document.getElementById(page).classList.add('active');
       var buttons = document.querySelectorAll('.nav-btn');
-      for (var i = 0; i < buttons.length; i++) {
-        buttons[i].classList.remove('active');
-      }
+      for (var j = 0; j < buttons.length; j++) { buttons[j].classList.remove('active'); }
       button.classList.add('active');
     }
 
     window.onload = function() {
-      document.getElementById('langSelect').value = language;
+      var select = document.getElementById('langSelect');
+      select.value = language;
       applyTranslations();
       loadData();
     };
