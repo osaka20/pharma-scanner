@@ -1,29 +1,30 @@
-# Pharma Scanner (Standalone)
+# PharmaScanner
 
-A single-file pharmacy management app with server-backed JSON persistence. Runs locally with a tiny Go server and stores data in `pharma-data.json` next to the app. English by default with Arabic UI option.
+🚀 **Aucune installation requise** - Double-cliquez sur `PharmaScanner.exe` et c'est parti !
 
-## Run (Linux/macOS)
-- `./start_server.sh`
-- Open `http://localhost:8080`
+Application de gestion pharmaceutique avec sauvegarde de données locale en JSON.
 
-## Run (Windows)
-- If you have the compiled binary:
-  - Place `PharmaScanner.exe` and `app-standalone.html` in the same folder.
-  - Double‑click `PharmaScanner.exe` then open `http://localhost:8080`.
-- If you have Go installed:
-  - `start_server.bat` will run `server\main.go` directly.
+## 🎯 Utilisation
 
-## Build Windows Executable
-Requires Go installed on your dev machine.
-- `./build_windows.sh`
-- Outputs `PharmaScanner.exe` in the project root.
+### Windows
+**Double-cliquez sur `PharmaScanner.exe`**
+- L'application s'ouvre automatiquement dans votre navigateur
+- Les données sont sauvegardées automatiquement dans `pharma-data.json`
 
-## Data Persistence
-- The server reads/writes `pharma-data.json` in the working directory via the `/data` endpoint.
-- The app prefers server persistence; optional file-based fallback via the File System Access API.
+### Linux/macOS
+```bash
+go run server/main.go
+```
 
-## Features
-- Product catalog (CRUD), Sell and Undo.
-- Margin realized tracking with reset offset (history preserved).
-- Sales history with filters and PDF export.
-- English default, Arabic UI option.
+## ✨ Fonctionnalités
+- Gestion du catalogue produits (Ajouter, Modifier, Supprimer)
+- Ventes et annulation
+- Suivi des marges bénéficiaires
+- Historique des ventes avec filtres
+- Français/Anglais/Arabe
+
+## ⚠️ Antivirus
+
+Si Windows bloque le fichier (faux positif) :
+- Cliquez **"Exécuter quand même"**
+- OU ajoutez une exception dans Sécurité Windows → Protection antivirus → Exclusions
