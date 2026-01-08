@@ -1,36 +1,38 @@
 @echo off
-REM PharmaScanner - Lanceur ultra-simple
-REM Double-cliquez sur ce fichier, c'est tout !
-
+chcp 65001 >nul
 title PharmaScanner
-color 0A
 cls
-
 echo.
-echo   ╔═══════════════════════════════════════╗
-echo   ║      PHARMASCANNER v1.0               ║
-echo   ║   Application 100%% locale             ║
-echo   ╚═══════════════════════════════════════╝
+echo    ╔════════════════════════════════════════════╗
+echo    ║     💊 PharmaScanner - Démarrage          ║
+echo    ╚════════════════════════════════════════════╝
 echo.
 
-if exist "PharmaScanner.exe" (
-    echo   ✓ Application trouvée
-    echo   ✓ Lancement en cours...
-    echo.
-    start "" "PharmaScanner.exe"
-    
-    timeout /t 2 /nobreak >nul
-    echo   ✓ Accédez à : http://localhost:8080
-    echo   ✓ Fenêtre navigateur en cours d'ouverture...
-    echo.
-) else (
-    echo   ✗ ERREUR : PharmaScanner.exe introuvable !
-    echo   Assurez-vous que ce fichier est dans le même dossier
+set FILE=PharmaScanner.hta
+
+if not exist "%FILE%" (
+    echo ❌ Erreur: %FILE% non trouvé
     echo.
     pause
     exit /b 1
 )
 
-echo   Application lancée avec succès !
+echo ✓ Ouverture de PharmaScanner...
 echo.
-timeout /t 3 /nobreak >nul
+start "" "%FILE%"
+
+echo ✓ L'application s'est lancée
+echo.
+echo   📂 Fichiers:
+echo   • PharmaScanner.hta   ^| Application complète
+echo   • pharma-data.json    ^| Données (créé automatiquement)
+echo   • Lancer.bat          ^| Ce fichier de lancement
+echo.
+echo   💾 Stockage: Fichier JSON sur disque dur
+echo   🔐 Données: Sauvegarde automatique à chaque modification
+echo   📡 Connexion: Pas nécessaire
+echo   ✅ Durable: Aucun risque de perte de données
+echo.
+echo   ℹ️  L'application s'ouvre dans sa propre fenêtre
+echo.
+pause

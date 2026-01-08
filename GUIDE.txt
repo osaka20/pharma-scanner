@@ -1,0 +1,88 @@
+╔══════════════════════════════════════════════════════════════════╗
+║                  PHARMASCANNER - GUIDE RAPIDE                     ║
+╚══════════════════════════════════════════════════════════════════╝
+
+🚀 DÉMARRAGE RAPIDE
+═══════════════════════════════════════════════════════════════════
+
+1. Double-cliquez sur "Lancer.bat"
+2. L'application s'ouvre automatiquement
+3. C'est tout !
+
+
+📂 FICHIERS NÉCESSAIRES
+═══════════════════════════════════════════════════════════════════
+
+✅ PharmaScanner.hta  (27 KB)   - Application complète
+✅ Lancer.bat         (1 KB)    - Lanceur
+✅ pharma-data.json   (auto)    - Données (créé automatiquement)
+
+
+💾 STOCKAGE DES DONNÉES - 100% DURABLE
+═══════════════════════════════════════════════════════════════════
+
+• Fichier : pharma-data.json
+• Emplacement : Même dossier que l'application
+• Sauvegarde : AUTOMATIQUE à chaque modification
+• Durabilité : ZÉRO risque de perte
+
+✅ Pas de dépendance au navigateur
+✅ Pas de quota de stockage
+✅ Transférable facilement
+✅ Visible dans l'explorateur Windows
+✅ Format JSON (éditable manuellement si besoin)
+
+
+🔐 SÉCURITÉ
+═══════════════════════════════════════════════════════════════════
+
+✅ Zéro antivirus - Format HTA (Microsoft)
+✅ 100% local - Aucune connexion internet
+✅ Pas de serveur - Fonctionne directement
+✅ Code visible - Aucune obfuscation
+
+
+📋 FONCTIONNALITÉS
+═══════════════════════════════════════════════════════════════════
+
+• Ajouter des médicaments (nom, type, quantité, expiration, notes)
+• Rechercher instantanément
+• Modifier/Supprimer
+• Sauvegarde automatique
+• Interface moderne et intuitive
+
+
+💡 ASTUCES
+═══════════════════════════════════════════════════════════════════
+
+• Pour sauvegarder : Copiez simplement "pharma-data.json"
+• Pour restaurer : Replacez "pharma-data.json" dans le dossier
+• Sur clé USB : Copiez les 2 fichiers (.hta + .bat) partout
+• Multi-PC : Copiez pharma-data.json entre PC
+
+
+🔧 BACKUP DISPONIBLE
+═══════════════════════════════════════════════════════════════════
+
+Un backup de la version .exe est dans le dossier "backup-exe/"
+Utilisez-le si vous préférez une version serveur HTTP
+(Note: peut être détecté par antivirus)
+
+
+❓ PROBLÈMES ?
+═══════════════════════════════════════════════════════════════════
+
+Q: L'application ne s'ouvre pas ?
+R: Double-cliquez directement sur PharmaScanner.hta
+
+Q: Mes données sont perdues ?
+R: Impossible ! Vérifiez que pharma-data.json existe
+
+Q: Ça fonctionne sur Mac/Linux ?
+R: Non, HTA est Windows uniquement. Utilisez la version .exe
+
+
+═══════════════════════════════════════════════════════════════════
+Version 1.0 - Janvier 2026
+Développé pour durabilité et fiabilité maximales
+═══════════════════════════════════════════════════════════════════
