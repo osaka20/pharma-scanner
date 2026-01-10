@@ -1013,10 +1013,10 @@
     }
 
     function updatePreviewText(size) {
-      var sizes = {'small': '16px', 'normal': '18px', 'large': '20px', 'xlarge': '24px'};
+      var zooms = {'small': '90%', 'normal': '100%', 'large': '115%', 'xlarge': '130%'};
       var preview = document.getElementById('fontPreviewText');
       if (preview) {
-        preview.style.fontSize = sizes[size] || '18px';
+        preview.style.zoom = zooms[size] || '100%';
       }
     }
 
@@ -1033,8 +1033,8 @@
     }
 
     function applyFontSizeToBody(size) {
-      var sizes = {'small': '16px', 'normal': '18px', 'large': '20px', 'xlarge': '24px'};
-      document.body.style.fontSize = sizes[size] || '18px';
+      var zooms = {'small': '90%', 'normal': '100%', 'large': '115%', 'xlarge': '130%'};
+      document.body.style.zoom = zooms[size] || '100%';
     }
 
     function applyFontSize() {
