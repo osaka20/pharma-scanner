@@ -1013,10 +1013,10 @@
     }
 
     function updatePreviewText(size) {
-      var zooms = {'small': '90%', 'normal': '100%', 'large': '115%', 'xlarge': '130%'};
+      var sizes = {'small': '12px', 'normal': '16px', 'large': '24px', 'xlarge': '32px'};
       var preview = document.getElementById('fontPreviewText');
       if (preview) {
-        preview.style.zoom = zooms[size] || '100%';
+        preview.style.fontSize = sizes[size] || '16px';
       }
     }
 
@@ -1033,8 +1033,35 @@
     }
 
     function applyFontSizeToBody(size) {
-      var zooms = {'small': '90%', 'normal': '100%', 'large': '115%', 'xlarge': '130%'};
-      document.body.style.zoom = zooms[size] || '100%';
+      // Small: 0.75x, Normal: 1x, Large: 1.5x, XLarge: 2x
+      var baseSize = 16;
+      var multipliers = {'small': 0.75, 'normal': 1, 'large': 1.5, 'xlarge': 2};
+      var mult = multipliers[size] || 1;
+      var newSize = Math.round(baseSize * mult);
+      
+      // Supprimer l'ancien style dynamique s'il existe
+      var oldStyle = document.getElementById('dynamicFontStyle');
+      if (oldStyle) { oldStyle.parentNode.removeChild(oldStyle); }
+      
+      // Créer un nouveau style qui force toutes les polices
+      var style = document.createElement('style');
+      style.id = 'dynamicFontStyle';
+      style.type = 'text/css';
+      var css = 'body, body * { font-size: ' + newSize + 'px !important; }';
+      css += ' h1 { font-size: ' + Math.round(28 * mult) + 'px !important; }';
+      css += ' h2 { font-size: ' + Math.round(24 * mult) + 'px !important; }';
+      css += ' h3 { font-size: ' + Math.round(20 * mult) + 'px !important; }';
+      css += ' .stat-value { font-size: ' + Math.round(28 * mult) + 'px !important; }';
+      css += ' .stat-label { font-size: ' + Math.round(14 * mult) + 'px !important; }';
+      css += ' .modal-header { font-size: ' + Math.round(22 * mult) + 'px !important; }';
+      css += ' .btn { font-size: ' + Math.round(15 * mult) + 'px !important; padding: ' + Math.round(12 * mult) + 'px ' + Math.round(20 * mult) + 'px !important; }';
+      css += ' .nav-btn { font-size: ' + Math.round(14 * mult) + 'px !important; }';
+      css += ' th, td { font-size: ' + Math.round(15 * mult) + 'px !important; padding: ' + Math.round(12 * mult) + 'px !important; }';
+      css += ' input, textarea, select { font-size: ' + Math.round(15 * mult) + 'px !important; padding: ' + Math.round(10 * mult) + 'px !important; }';
+      css += ' label { font-size: ' + Math.round(15 * mult) + 'px !important; }';
+      css += ' .sale-btn, .undo-btn { font-size: ' + Math.round(13 * mult) + 'px !important; }';
+      style.styleSheet.cssText = css;
+      document.getElementsByTagName('head')[0].appendChild(style);
     }
 
     function applyFontSize() {
