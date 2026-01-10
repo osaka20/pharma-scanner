@@ -77,6 +77,10 @@
     .alert.show { display: block; }
     .alert-success { background: #e8f5e9; border: 1px solid #66bb6a; color: #2e7d32; }
     .alert-error { background: #ffebee; border: 1px solid #ef5350; color: #c62828; }
+    .font-btn { display: inline-block; padding: 1rem 1.5rem; margin: 0.5rem; border: 3px solid #ddd; border-radius: 8px; cursor: pointer; text-align: center; background: white; min-width: 100px; }
+    .font-btn:hover { border-color: #667eea; background: #f8f9ff; }
+    .font-btn.selected { border-color: #667eea; background: #667eea; color: white; }
+    .font-buttons { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.5rem; margin: 1.5rem 0; }
     .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; }
     .margin-negative { color: #ef5350; font-weight: bold; }
     h2 { margin-bottom: 1.5rem; color: #333; }
@@ -207,20 +211,22 @@
   <div id="settingsModal" class="modal">
     <div class="modal-content">
       <div class="modal-header" data-translate="settingsTitle">Settings</div>
-      <div class="form-group">
-        <label data-translate="fontSize" style="font-size:18px;margin-bottom:1rem;">Font Size</label>
-        <div style="display:flex;justify-content:space-between;margin-bottom:0.5rem;">
-          <span data-translate="fontSmall" style="font-size:14px;">Small</span>
-          <span data-translate="fontNormal" style="font-size:16px;">Normal</span>
-          <span data-translate="fontLarge" style="font-size:18px;">Large</span>
-          <span data-translate="fontXLarge" style="font-size:20px;">Very Large</span>
+      <div style="margin-bottom:1.5rem;">
+        <label data-translate="fontSize" style="display:block;font-size:18px;margin-bottom:1rem;font-weight:600;">Font Size</label>
+        <div class="font-buttons">
+          <div class="font-btn" onclick="selectFontSize('small', this)" style="font-size:14px;" data-translate="fontSmall">Small</div>
+          <div class="font-btn" onclick="selectFontSize('normal', this)" style="font-size:16px;" data-translate="fontNormal">Normal</div>
+          <div class="font-btn" onclick="selectFontSize('large', this)" style="font-size:18px;" data-translate="fontLarge">Large</div>
+          <div class="font-btn" onclick="selectFontSize('xlarge', this)" style="font-size:20px;" data-translate="fontXLarge">Very Large</div>
         </div>
-        <input type="range" id="fontSizeRange" min="1" max="4" value="2" step="1" style="width:100%;height:30px;cursor:pointer;" oninput="updateFontPreview()">
-        <div style="text-align:center;margin-top:1rem;font-size:20px;font-weight:bold;color:#667eea;" id="fontPreview">Preview</div>
+      </div>
+      <div style="text-align:center;padding:1.5rem;background:#f9f9f9;border-radius:8px;margin-bottom:1.5rem;">
+        <div style="color:#666;margin-bottom:0.5rem;" data-translate="preview">Preview:</div>
+        <div id="fontPreviewText" style="font-size:18px;">Pharma Scanner - Sample Text</div>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" onclick="closeSettings()" data-translate="cancel">Cancel</button>
-        <button type="button" class="btn btn-primary" onclick="confirmFontSize()" data-translate="save">Confirm</button>
+        <button type="button" class="btn btn-secondary" onclick="cancelSettings()" data-translate="cancel">Cancel</button>
+        <button type="button" class="btn btn-primary" onclick="confirmSettings()" data-translate="save">Save</button>
       </div>
     </div>
   </div>
@@ -350,7 +356,8 @@
         fontSmall: 'Small',
         fontNormal: 'Normal',
         fontLarge: 'Large',
-        fontXLarge: 'Very Large'
+        fontXLarge: 'Very Large',
+        preview: 'Preview:'
       },
       ar: {
         appTitle: 'Pharma Scanner',
@@ -437,7 +444,8 @@
         fontSmall: 'صغير',
         fontNormal: 'عادي',
         fontLarge: 'كبير',
-        fontXLarge: 'كبير جداً'
+        fontXLarge: 'كبير جداً',
+        preview: 'معاينة:'
       }
     };
 
@@ -947,35 +955,52 @@
       button.classList.add('active');
     }
 
+    var pendingFontSize = 'normal';
+
     function openSettings() {
+      var currentSize = window.localStorage ? (localStorage.getItem('fontSize') || 'normal') : 'normal';
+      pendingFontSize = currentSize;
       document.getElementById('settingsModal').classList.add('active');
-      var fontSize = window.localStorage ? (localStorage.getItem('fontSize') || 'normal') : 'normal';
-      var rangeValue = {'small': 1, 'normal': 2, 'large': 3, 'xlarge': 4}[fontSize] || 2;
-      document.getElementById('fontSizeRange').value = rangeValue;
-      updateFontPreview();
+      highlightSelectedFont(currentSize);
+      updatePreviewText(currentSize);
       applyTranslations();
     }
 
-    function closeSettings() {
+    function highlightSelectedFont(size) {
+      var btns = document.querySelectorAll('.font-btn');
+      for (var i = 0; i < btns.length; i++) {
+        btns[i].className = 'font-btn';
+      }
+      var sizeMap = {'small': 0, 'normal': 1, 'large': 2, 'xlarge': 3};
+      var idx = sizeMap[size];
+      if (idx !== undefined && btns[idx]) {
+        btns[idx].className = 'font-btn selected';
+      }
+    }
+
+    function selectFontSize(size, btn) {
+      pendingFontSize = size;
+      highlightSelectedFont(size);
+      updatePreviewText(size);
+    }
+
+    function updatePreviewText(size) {
+      var sizes = {'small': '16px', 'normal': '18px', 'large': '20px', 'xlarge': '24px'};
+      var preview = document.getElementById('fontPreviewText');
+      if (preview) {
+        preview.style.fontSize = sizes[size] || '18px';
+      }
+    }
+
+    function cancelSettings() {
       document.getElementById('settingsModal').classList.remove('active');
     }
 
-    function updateFontPreview() {
-      var range = document.getElementById('fontSizeRange');
-      var sizes = ['16px', '18px', '20px', '24px'];
-      var preview = document.getElementById('fontPreview');
-      preview.style.fontSize = sizes[range.value - 1];
-      preview.innerText = t('fontSize') + ': ' + ['Small', 'Normal', 'Large', 'Very Large'][range.value - 1];
-    }
-
-    function confirmFontSize() {
-      var range = document.getElementById('fontSizeRange');
-      var sizeNames = ['small', 'normal', 'large', 'xlarge'];
-      var size = sizeNames[range.value - 1];
-      if (window.localStorage) { localStorage.setItem('fontSize', size); }
+    function confirmSettings() {
+      if (window.localStorage) { localStorage.setItem('fontSize', pendingFontSize); }
       document.body.className = document.body.className.replace(/font-\w+/g, '');
-      document.body.classList.add('font-' + size);
-      closeSettings();
+      document.body.classList.add('font-' + pendingFontSize);
+      document.getElementById('settingsModal').classList.remove('active');
       showAlert(t('saveSuccess'), 'success');
     }
 
