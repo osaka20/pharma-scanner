@@ -1060,8 +1060,14 @@
       css += ' input, textarea, select { font-size: ' + Math.round(15 * mult) + 'px !important; padding: ' + Math.round(10 * mult) + 'px !important; }';
       css += ' label { font-size: ' + Math.round(15 * mult) + 'px !important; }';
       css += ' .sale-btn, .undo-btn { font-size: ' + Math.round(13 * mult) + 'px !important; }';
-      style.styleSheet.cssText = css;
+      
+      // Ajouter au DOM d'abord, puis définir le CSS (compatible IE)
       document.getElementsByTagName('head')[0].appendChild(style);
+      if (style.styleSheet) {
+        style.styleSheet.cssText = css;
+      } else {
+        style.appendChild(document.createTextNode(css));
+      }
     }
 
     function applyFontSize() {
