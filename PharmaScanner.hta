@@ -222,7 +222,7 @@
       </div>
       <div style="text-align:center;padding:1.5rem;background:#f9f9f9;border-radius:8px;margin-bottom:1.5rem;">
         <div style="color:#666;margin-bottom:0.5rem;" data-translate="preview">Preview:</div>
-        <div id="fontPreviewText" style="font-size:18px;">Pharma Scanner - Sample Text</div>
+        <div id="fontPreviewText">Pharma Scanner - Sample Text</div>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" onclick="cancelSettings()" data-translate="cancel">Cancel</button>
@@ -1018,7 +1018,7 @@
       var previewSize = Math.round(18 * mult);
       var preview = document.getElementById('fontPreviewText');
       if (preview) {
-        preview.style.fontSize = previewSize + 'px';
+        preview.setAttribute('style', 'font-size:' + previewSize + 'px !important;');
       }
     }
 
