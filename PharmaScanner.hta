@@ -21,6 +21,10 @@
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; color: #333; font-size: 16px; }
+    body.font-small { font-size: 14px; }
+    body.font-normal { font-size: 16px; }
+    body.font-large { font-size: 18px; }
+    body.font-xlarge { font-size: 20px; }
     [dir="rtl"] { text-align: right; }
     [dir="rtl"] .navbar-menu { flex-direction: row-reverse; }
     .container { width: 100%; min-height: 100vh; background: white; }
@@ -90,6 +94,7 @@
         <button class="nav-btn" data-translate="products" onclick="changePage('products', this)">Products</button>
         <button class="nav-btn" data-translate="history" onclick="changePage('history', this)">History</button>
         <button class="nav-btn" data-translate="backup" onclick="changePage('export', this)">Backup</button>
+        <button class="nav-btn" onclick="openSettings()" data-translate="settings">Settings</button>
       </div>
       <select class="language-select" id="langSelect" onchange="changeLanguage()">
         <option value="en">English</option>
@@ -195,6 +200,24 @@
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" onclick="closeBulkQtyModal()" data-translate="cancel">Cancel</button>
         <button type="button" class="btn btn-primary" onclick="confirmBulkSetQuantity()" data-translate="confirm">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="settingsModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header" data-translate="settingsTitle">Settings</div>
+      <div class="form-group">
+        <label data-translate="fontSize">Font Size</label>
+        <select id="fontSizeSelect" onchange="changeFontSize()" style="width:100%;padding:0.75rem;border:1px solid #ddd;border-radius:4px;font-size:15px;">
+          <option value="small" data-translate="fontSmall">Small</option>
+          <option value="normal" data-translate="fontNormal">Normal</option>
+          <option value="large" data-translate="fontLarge">Large</option>
+          <option value="xlarge" data-translate="fontXLarge">Very Large</option>
+        </select>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" onclick="closeSettings()" data-translate="cancel">Close</button>
       </div>
     </div>
   </div>
@@ -317,7 +340,14 @@
         productsSelected: 'products selected',
         bulkQtyLabel: 'New quantity for all selected products',
         confirm: 'Confirm',
-        bulkQtyConfirm: 'Set quantity to {{qty}} for {{count}} products?'
+        bulkQtyConfirm: 'Set quantity to {{qty}} for {{count}} products?',
+        settings: 'Settings',
+        settingsTitle: 'Settings',
+        fontSize: 'Font Size',
+        fontSmall: 'Small',
+        fontNormal: 'Normal',
+        fontLarge: 'Large',
+        fontXLarge: 'Very Large'
       },
       ar: {
         appTitle: 'Pharma Scanner',
@@ -397,7 +427,14 @@
         productsSelected: 'منتج محدد',
         bulkQtyLabel: 'الكمية الجديدة لجميع المنتجات المحددة',
         confirm: 'تأكيد',
-        bulkQtyConfirm: 'تعيين الكمية إلى {{qty}} لـ {{count}} منتج؟'
+        bulkQtyConfirm: 'تعيين الكمية إلى {{qty}} لـ {{count}} منتج؟',
+        settings: 'الإعدادات',
+        settingsTitle: 'الإعدادات',
+        fontSize: 'حجم الخط',
+        fontSmall: 'صغير',
+        fontNormal: 'عادي',
+        fontLarge: 'كبير',
+        fontXLarge: 'كبير جداً'
       }
     };
 
@@ -907,9 +944,34 @@
       button.classList.add('active');
     }
 
+    function openSettings() {
+      document.getElementById('settingsModal').classList.add('active');
+      var fontSize = window.localStorage ? (localStorage.getItem('fontSize') || 'normal') : 'normal';
+      document.getElementById('fontSizeSelect').value = fontSize;
+      applyTranslations();
+    }
+
+    function closeSettings() {
+      document.getElementById('settingsModal').classList.remove('active');
+    }
+
+    function changeFontSize() {
+      var size = document.getElementById('fontSizeSelect').value;
+      if (window.localStorage) { localStorage.setItem('fontSize', size); }
+      document.body.className = document.body.className.replace(/font-\w+/g, '');
+      document.body.classList.add('font-' + size);
+    }
+
+    function applyFontSize() {
+      var fontSize = window.localStorage ? (localStorage.getItem('fontSize') || 'normal') : 'normal';
+      document.body.className = document.body.className.replace(/font-\w+/g, '');
+      document.body.classList.add('font-' + fontSize);
+    }
+
     window.onload = function() {
       var select = document.getElementById('langSelect');
       select.value = language;
+      applyFontSize();
       applyTranslations();
       loadData();
     };
