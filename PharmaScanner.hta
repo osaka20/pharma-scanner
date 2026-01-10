@@ -1013,10 +1013,12 @@
     }
 
     function updatePreviewText(size) {
-      var sizes = {'small': '12px', 'normal': '16px', 'large': '24px', 'xlarge': '32px'};
+      var multipliers = {'small': 0.75, 'normal': 1, 'large': 1.5, 'xlarge': 2};
+      var mult = multipliers[size] || 1;
+      var previewSize = Math.round(18 * mult);
       var preview = document.getElementById('fontPreviewText');
       if (preview) {
-        preview.style.fontSize = sizes[size] || '16px';
+        preview.style.fontSize = previewSize + 'px';
       }
     }
 
