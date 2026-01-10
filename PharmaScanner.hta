@@ -956,14 +956,42 @@
     }
 
     var pendingFontSize = 'normal';
+    var currentFontSize = 'normal';
 
     function openSettings() {
-      var currentSize = window.localStorage ? (localStorage.getItem('fontSize') || 'normal') : 'normal';
-      pendingFontSize = currentSize;
-      document.getElementById('settingsModal').classList.add('active');
-      highlightSelectedFont(currentSize);
-      updatePreviewText(currentSize);
+      currentFontSize = getSavedFontSize();
+      pendingFontSize = currentFontSize;
+      document.getElementById('settingsModal').className = 'modal active';
+      highlightSelectedFont(currentFontSize);
+      updatePreviewText(currentFontSize);
       applyTranslations();
+    }
+
+    function getSavedFontSize() {
+      try {
+        var settingsPath = fso.BuildPath(appPath, "pharma-settings.json");
+        if (fso.FileExists(settingsPath)) {
+          var file = fso.OpenTextFile(settingsPath, 1, false, -1);
+          var content = file.ReadAll();
+          file.Close();
+          var settings = JSON.parse(content);
+          return settings.fontSize || 'normal';
+        }
+      } catch(e) {}
+      return 'normal';
+    }
+
+    function saveFontSize(size) {
+      try {
+        var settingsPath = fso.BuildPath(appPath, "pharma-settings.json");
+        var settings = {fontSize: size};
+        var file = fso.CreateTextFile(settingsPath, true, true);
+        file.Write(JSON.stringify(settings));
+        file.Close();
+        return true;
+      } catch(e) {
+        return false;
+      }
     }
 
     function highlightSelectedFont(size) {
@@ -993,21 +1021,26 @@
     }
 
     function cancelSettings() {
-      document.getElementById('settingsModal').classList.remove('active');
+      document.getElementById('settingsModal').className = 'modal';
     }
 
     function confirmSettings() {
-      if (window.localStorage) { localStorage.setItem('fontSize', pendingFontSize); }
-      document.body.className = document.body.className.replace(/font-\w+/g, '');
-      document.body.classList.add('font-' + pendingFontSize);
-      document.getElementById('settingsModal').classList.remove('active');
+      saveFontSize(pendingFontSize);
+      currentFontSize = pendingFontSize;
+      applyFontSizeToBody(pendingFontSize);
+      document.getElementById('settingsModal').className = 'modal';
       showAlert(t('saveSuccess'), 'success');
     }
 
+    function applyFontSizeToBody(size) {
+      var sizes = {'small': '16px', 'normal': '18px', 'large': '20px', 'xlarge': '24px'};
+      document.body.style.fontSize = sizes[size] || '18px';
+    }
+
     function applyFontSize() {
-      var fontSize = window.localStorage ? (localStorage.getItem('fontSize') || 'normal') : 'normal';
-      document.body.className = document.body.className.replace(/font-\w+/g, '');
-      document.body.classList.add('font-' + fontSize);
+      var fontSize = getSavedFontSize();
+      currentFontSize = fontSize;
+      applyFontSizeToBody(fontSize);
     }
 
     window.onload = function() {
