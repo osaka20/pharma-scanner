@@ -530,7 +530,7 @@
       var names = {};
       for (var k = 0; k < products.length; k++) { names[products[k].id] = products[k].name; }
       for (var h = 0; h < sales.length; h++) {
-        sales[h].productName = names[sales[h].productId] ;
+        sales[h].productName = names[sales[h].productId] || '(deleted)';
       }
     }
 
