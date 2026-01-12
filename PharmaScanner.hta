@@ -732,7 +732,7 @@
     function toggleSelectAll(checked) {
       if (checked) { for (var i = 0; i < products.length; i++) addSelected(products[i].id); }
       else { clearSelected(); }
-      renderProducts();
+      renderAll();
     }
 
     function bulkDelete() {
@@ -742,7 +742,7 @@
       products = filtered;
       clearSelected();
       saveAll();
-      renderProducts();
+      renderAll();
       showAlert(t('deleteSuccess'), 'success');
     }
 
@@ -772,7 +772,7 @@
       clearSelected();
       closeBulkQtyModal();
       saveAll();
-      renderProducts();
+      renderAll();
       showAlert(t('saveSuccess'), 'success');
     }
 
