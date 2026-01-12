@@ -5,6 +5,8 @@
   <meta http-equiv="x-ua-compatible" content="IE=11" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Pharma Scanner</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pikaday@1.8.2/css/pikaday.css">
+  <script src="https://cdn.jsdelivr.net/npm/pikaday@1.8.2/pikaday.min.js"></script>
   <HTA:APPLICATION 
     ID="PharmaScanner"
     APPLICATIONNAME="PharmaScanner"
@@ -113,10 +115,10 @@
         <h2 data-translate="dashboardTitle">Dashboard</h2>
         <div class="stats-grid">
           <div class="stat-card"><div class="stat-label" data-translate="totalProducts">Total Products</div><div class="stat-value" id="totalProducts">0</div></div>
-          <div class="stat-card"><div class="stat-label" data-translate="stockValue">Stock Value</div><div class="stat-value" id="totalValue">0€</div></div>
+          <div class="stat-card"><div class="stat-label" data-translate="stockValue">Stock Value</div><div class="stat-value" id="totalValue">0</div></div>
           <div class="stat-card" style="display:flex; flex-direction:column; gap:0.5rem; align-items:center;">
             <div class="stat-label" data-translate="marginRealized">Margin Realized</div>
-            <div class="stat-value" id="totalMargin">0€</div>
+            <div class="stat-value" id="totalMargin">0</div>
             <button class="btn btn-warning" style="padding:0.4rem 0.75rem; font-size:12px;" onclick="resetMargin()" data-translate="resetMargin">Reset Margin</button>
           </div>
         </div>
@@ -358,7 +360,12 @@
         fontNormal: 'Normal',
         fontLarge: 'Large',
         fontXLarge: 'Very Large',
-        preview: 'Preview:'
+        preview: 'Preview:',
+        errorLoadingData: 'Error loading data: ',
+        errorSavingData: 'Error saving data: ',
+        invalidPrice: 'Invalid price',
+        salePriceUpdated: 'Sale price updated!',
+        errorGeneric: 'Error: '
       },
       ar: {
         appTitle: 'Pharma Scanner',
@@ -446,7 +453,12 @@
         fontNormal: 'عادي',
         fontLarge: 'كبير',
         fontXLarge: 'كبير جداً',
-        preview: 'معاينة:'
+        preview: 'معاينة:',
+        errorLoadingData: 'خطأ في تحميل البيانات: ',
+        errorSavingData: 'خطأ في حفظ البيانات: ',
+        invalidPrice: 'سعر غير صحيح',
+        salePriceUpdated: 'تم تحديث سعر البيع!',
+        errorGeneric: 'خطأ: '
       }
     };
 
@@ -470,11 +482,17 @@
       document.documentElement.setAttribute('lang', language);
     }
 
-    function changeLanguage() {
-      language = document.getElementById('langSelect').value;
-      if (window.localStorage) localStorage.setItem('lang', language);
-      applyTranslations();
-      renderAll();
+    function initDatePickers() {
+      var startPicker = new Pikaday({
+        field: document.getElementById('historyStart'),
+        format: 'YYYY-MM-DD',
+        onSelect: function() { applyHistoryFilters(); }
+      });
+      var endPicker = new Pikaday({
+        field: document.getElementById('historyEnd'),
+        format: 'YYYY-MM-DD',
+        onSelect: function() { applyHistoryFilters(); }
+      });
     }
 
     function packState() {
@@ -552,7 +570,7 @@
           saveAll();
         }
       } catch (e) {
-        showAlert('Error loading data: ' + e.message, 'error');
+        showAlert(t('errorLoadingData') + e.message, 'error');
         products = [];
         sales = [];
       }
@@ -566,11 +584,11 @@
         file.Write(payload);
         file.Close();
       } catch (e) {
-        showAlert('Error saving data: ' + e.message, 'error');
+        showAlert(t('errorSavingData') + e.message, 'error');
       }
     }
 
-    function formatEuro(v) { return parseFloat(v || 0).toFixed(2) + '€'; }
+    function formatPrice(v) { return parseFloat(v || 0).toFixed(2); }
 
     function renderDashboard() {
       var total = products.length;
@@ -580,8 +598,8 @@
       for (var j = 0; j < sales.length; j++) { marginRaw += parseFloat(sales[j].marginTotal || 0); }
       var marginVal = marginRaw - marginOffset;
       document.getElementById('totalProducts').innerText = total;
-      document.getElementById('totalValue').innerText = formatEuro(value);
-      document.getElementById('totalMargin').innerText = formatEuro(marginVal);
+      document.getElementById('totalValue').innerText = formatPrice(value);
+      document.getElementById('totalMargin').innerText = formatPrice(marginVal);
 
       var recent = products.slice(Math.max(products.length - 5, 0)).reverse();
       var html = '';
@@ -590,8 +608,8 @@
       } else {
         for (var r = 0; r < recent.length; r++) {
           var p = recent[r];
-          html += '<tr><td>' + p.name + '</td><td>' + p.brand + '</td><td>' + formatEuro(p.salePrice) + '</td>' +
-                  '<td class="' + (parseFloat(p.margin || 0) < 0 ? 'margin-negative' : '') + '">' + formatEuro(p.margin) + '</td>' +
+          html += '<tr><td>' + p.name + '</td><td>' + p.brand + '</td><td>' + formatPrice(p.salePrice) + '</td>' +
+                  '<td class="' + (parseFloat(p.margin || 0) < 0 ? 'margin-negative' : '') + '">' + formatPrice(p.margin) + '</td>' +
                   '<td>' + (p.quantity || 0) + '</td></tr>';
         }
       }
@@ -642,7 +660,7 @@
           var typeLabel = sale.type === 'undo' ? t('undoType') : t('sale');
           var qtyTxt = sale.type === 'undo' ? '+' + (sale.qty || 1) : '-' + (sale.qty || 1);
           html += '<tr><td>' + formatted + '</td><td>' + sale.productName + '</td>' +
-                  '<td class="' + (marginVal < 0 ? 'margin-negative' : '') + '">' + formatEuro(marginVal) + '</td>' +
+                  '<td class="' + (marginVal < 0 ? 'margin-negative' : '') + '">' + formatPrice(marginVal) + '</td>' +
                   '<td>' + qtyTxt + '</td><td>' + typeLabel + '</td></tr>';
         }
       }
@@ -686,13 +704,13 @@
           var checked = isSelected(p2.id) ? 'checked' : '';
           html += '<tr>' +
             '<td style="text-align:center;"><input type="checkbox" '+checked+' onchange="toggleSelect('+p2.id+', this.checked)"></td>' +
-            '<td>'+p2.name+'</td><td>'+p2.brand+'</td><td>'+formatEuro(p2.purchasePrice)+'</td>' +
+            '<td>'+p2.name+'</td><td>'+p2.brand+'</td><td>'+formatPrice(p2.purchasePrice)+'</td>' +
             // Inline edit sale price
             '<td>'+
               '<input type="number" id="inlineSalePrice-'+p2.id+'" value="'+parseFloat(p2.salePrice||0)+'" min="0" step="0.01" style="width:80px; padding:0.2rem; border:1px solid #ccc; border-radius:4px;">'+
               '<button class="btn btn-success" style="padding:0.2rem 0.7rem; margin-left:0.3rem; font-size:13px;" onclick="saveInlineSalePrice('+p2.id+')">💾</button>'+
             '</td>' +
-            '<td class="'+(parseFloat(p2.margin || 0) < 0 ? 'margin-negative':'')+'">'+formatEuro(p2.margin)+'</td>' +
+            '<td class="'+(parseFloat(p2.margin || 0) < 0 ? 'margin-negative':'')+'">'+formatPrice(p2.margin)+'</td>' +
             '<td>'+(p2.quantity || 0)+'</td>' +
             '<td><input type="number" id="sellQty-'+p2.id+'" min="1" step="1" value="1" style="width:70px; padding:0.2rem; border:1px solid #ccc; border-radius:4px;"></td>' +
             '<td class="actions">' +
@@ -702,12 +720,12 @@
               '<button class="btn btn-danger" onclick="deleteProduct('+p2.id+')">'+t('delete')+'</button>' +
             '</td>' +
           '</tr>';
-        // Permettre la sauvegarde inline du prix de vente
+        // Allow inline saving of sale price
         function saveInlineSalePrice(id) {
           var input = document.getElementById('inlineSalePrice-' + id);
           if (!input) return;
           var val = parseFloat(input.value);
-          if (isNaN(val) || val < 0) { showAlert('Prix invalide', 'error'); return; }
+          if (isNaN(val) || val < 0) { showAlert(t('invalidPrice'), 'error'); return; }
           for (var i = 0; i < products.length; i++) {
             if (products[i].id === id) {
               products[i].salePrice = val;
@@ -717,7 +735,7 @@
           }
           saveAll();
           renderAll();
-          showAlert('Prix de vente mis à jour !', 'success');
+          showAlert(t('salePriceUpdated'), 'success');
         }
         window.saveInlineSalePrice = saveInlineSalePrice;
         }
@@ -804,7 +822,7 @@
       if (qtyInput) qtyInput.value = 1;
       saveAll();
       renderAll();
-      showAlert(t('saleSuccess') + (marginPerUnit * qty).toFixed(2) + '€', 'success');
+      showAlert(t('saleSuccess') + (marginPerUnit * qty).toFixed(2), 'success');
     }
 
     function undoSale(id) {
@@ -850,17 +868,21 @@
         var marginVal = parseFloat(sale.marginTotal || 0);
         var typeLabel = sale.type === 'undo' ? t('undoType') : t('sale');
         var qtyTxt = sale.type === 'undo' ? '+' + (sale.qty || 1) : '-' + (sale.qty || 1);
-        var marginTxt = marginVal.toFixed(2) + '€';
+        var marginTxt = marginVal.toFixed(2);
         rows += '<tr><td>'+formatted+'</td><td>'+sale.productName+'</td><td>'+qtyTxt+'</td><td>'+typeLabel+'</td><td>'+marginTxt+'</td></tr>';
       }
       var html = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>History PDF</title><style>body{font-family:Arial,sans-serif;padding:20px;}h2{margin-bottom:0.2rem;}p{margin:0.1rem 0 1rem 0;}table{width:100%;border-collapse:collapse;margin-top:1rem;}th,td{border:1px solid #ccc;padding:8px;text-align:left;}th{background:#f5f5f5;}</style></head><body>' +
         '<h2>'+t('historyTitle')+'</h2>' +
         '<p>'+t('saleDate')+': '+rangeText+'</p>' +
-        '<p>'+t('saleMargin')+': '+totalRawMargin.toFixed(2)+'€</p>' +
+        '<p>'+t('saleMargin')+': '+totalRawMargin.toFixed(2)+'</p>' +
         '<table><thead><tr><th>'+t('saleDate')+'</th><th>'+t('saleProduct')+'</th><th>'+t('saleQuantity')+'</th><th>'+t('saleType')+'</th><th>'+t('saleMargin')+'</th></tr></thead><tbody>' + (rows || '<tr><td colspan="5">'+t('noSales')+'</td></tr>') + '</tbody></table></body></html>';
       // Sauvegarder le HTML sur le disque
       var shell = new ActiveXObject('WScript.Shell');
-      var exportPath = fso.BuildPath(appPath, 'pharma-history.html');
+      // Générer un nom de fichier unique avec date et heure
+      var now = new Date();
+      function pad(n){return n<10?'0'+n:n;}
+      var fname = 'pharma-history-' + now.getFullYear() + pad(now.getMonth()+1) + pad(now.getDate()) + '-' + pad(now.getHours()) + pad(now.getMinutes()) + pad(now.getSeconds()) + '.html';
+      var exportPath = fso.BuildPath(appPath, fname);
       var file = fso.CreateTextFile(exportPath, true, true);
       file.Write(html);
       file.Close();
@@ -965,7 +987,7 @@
           renderAll();
           showAlert(t('importSuccess'), 'success');
           fileInput.value = '';
-        } catch (err) { showAlert('Error: ' + err.message, 'error'); }
+        } catch (err) { showAlert(t('errorGeneric') + err.message, 'error'); }
       };
       reader.readAsText(file);
     }
@@ -1115,6 +1137,7 @@
       applyFontSize();
       applyTranslations();
       loadData();
+      initDatePickers();
     };
   </script>
 </body>
