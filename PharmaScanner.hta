@@ -482,6 +482,13 @@
       document.documentElement.setAttribute('lang', language);
     }
 
+    function changeLanguage() {
+      language = document.getElementById('langSelect').value;
+      if (window.localStorage) localStorage.setItem('lang', language);
+      applyTranslations();
+      renderAll();
+    }
+
     function initDatePickers() {
       var startPicker = new Pikaday({
         field: document.getElementById('historyStart'),
