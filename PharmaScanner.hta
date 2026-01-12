@@ -610,6 +610,8 @@
       for (var i = 0; i < sales.length; i++) {
         var sale = sales[i];
         var d = new Date(sale.date);
+        // Si la date n'est pas valide, ignorer
+        if (isNaN(d.getTime())) continue;
         if (start && d < start) continue;
         if (end) {
           var endDay = new Date(end);
@@ -856,10 +858,14 @@
         '<p>'+t('saleDate')+': '+rangeText+'</p>' +
         '<p>'+t('saleMargin')+': '+totalRawMargin.toFixed(2)+'€</p>' +
         '<table><thead><tr><th>'+t('saleDate')+'</th><th>'+t('saleProduct')+'</th><th>'+t('saleQuantity')+'</th><th>'+t('saleType')+'</th><th>'+t('saleMargin')+'</th></tr></thead><tbody>' + (rows || '<tr><td colspan="5">'+t('noSales')+'</td></tr>') + '</tbody></table></body></html>';
-      var win = window.open('', '_blank');
-      win.document.write(html);
-      win.document.close();
-      win.focus();
+      // Sauvegarder le HTML sur le disque
+      var shell = new ActiveXObject('WScript.Shell');
+      var exportPath = fso.BuildPath(appPath, 'pharma-history.html');
+      var file = fso.CreateTextFile(exportPath, true, true);
+      file.Write(html);
+      file.Close();
+      // Ouvrir avec le navigateur par défaut
+      shell.Run('"' + exportPath + '"', 1, false);
       win.print();
     }
 
