@@ -334,7 +334,8 @@
         deleteSuccess: 'Product deleted successfully!',
         exportSuccess: 'Data exported successfully!',
         importSuccess: 'Data imported successfully!',
-        deleteConfirm: 'Are you sure you want to delete this product?',
+        
+        : 'Are you sure you want to delete this product?',
         importConfirm: 'This will replace all current products. Continue?',
         stockError: 'Insufficient stock!',
         noSaleToUndo: 'No recent sale to undo for this product!',
@@ -485,7 +486,8 @@
       var sArr = [];
       for (var j = 0; j < sales.length; j++) {
         var s = sales[j];
-        sArr.push([s.date, s.productId, s.marginTotal, s.type === 'undo' ? 'u' : 's', s.undone ? 1 : 0, s.qty || 1]);
+        // On sauvegarde aussi le nom du produit
+        sArr.push([s.date, s.productId, s.marginTotal, s.type === 'undo' ? 'u' : 's', s.undone ? 1 : 0, s.qty || 1, s.productName || '']);
       }
       return JSON.stringify({ v:2, p:pArr, s:sArr, o: marginOffset });
     }
@@ -518,7 +520,7 @@
             type: s[3] === 'u' ? 'undo' : 'sale',
             undone: !!s[4],
             qty: s[5] || 1,
-            productName: ''
+            productName: (typeof s[6] !== 'undefined' && s[6] !== '') ? s[6] : ''
           });
         }
         marginOffset = parseFloat(data.o || 0) || 0;
@@ -530,7 +532,9 @@
       var names = {};
       for (var k = 0; k < products.length; k++) { names[products[k].id] = products[k].name; }
       for (var h = 0; h < sales.length; h++) {
-        sales[h].productName = names[sales[h].productId] ;
+        if (!sales[h].productName || sales[h].productName === '') {
+          sales[h].productName = names[sales[h].productId] || '(deleted)';
+        }
       }
     }
 
@@ -890,7 +894,7 @@
       products = filtered;
       removeSelected(id);
       saveAll();
-      renderProducts();
+      renderAll();
       showAlert(t('deleteSuccess'), 'success');
     }
 
