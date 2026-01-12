@@ -681,7 +681,11 @@
           html += '<tr>' +
             '<td style="text-align:center;"><input type="checkbox" '+checked+' onchange="toggleSelect('+p2.id+', this.checked)"></td>' +
             '<td>'+p2.name+'</td><td>'+p2.brand+'</td><td>'+formatEuro(p2.purchasePrice)+'</td>' +
-            '<td>'+formatEuro(p2.salePrice)+'</td>' +
+            // Inline edit sale price
+            '<td>'+
+              '<input type="number" id="inlineSalePrice-'+p2.id+'" value="'+parseFloat(p2.salePrice||0)+'" min="0" step="0.01" style="width:80px; padding:0.2rem; border:1px solid #ccc; border-radius:4px;">'+
+              '<button class="btn btn-success" style="padding:0.2rem 0.7rem; margin-left:0.3rem; font-size:13px;" onclick="saveInlineSalePrice('+p2.id+')">💾</button>'+
+            '</td>' +
             '<td class="'+(parseFloat(p2.margin || 0) < 0 ? 'margin-negative':'')+'">'+formatEuro(p2.margin)+'</td>' +
             '<td>'+(p2.quantity || 0)+'</td>' +
             '<td><input type="number" id="sellQty-'+p2.id+'" min="1" step="1" value="1" style="width:70px; padding:0.2rem; border:1px solid #ccc; border-radius:4px;"></td>' +
@@ -692,6 +696,24 @@
               '<button class="btn btn-danger" onclick="deleteProduct('+p2.id+')">'+t('delete')+'</button>' +
             '</td>' +
           '</tr>';
+        // Permettre la sauvegarde inline du prix de vente
+        function saveInlineSalePrice(id) {
+          var input = document.getElementById('inlineSalePrice-' + id);
+          if (!input) return;
+          var val = parseFloat(input.value);
+          if (isNaN(val) || val < 0) { showAlert('Prix invalide', 'error'); return; }
+          for (var i = 0; i < products.length; i++) {
+            if (products[i].id === id) {
+              products[i].salePrice = val;
+              products[i].margin = parseFloat(products[i].salePrice) - parseFloat(products[i].purchasePrice||0);
+              break;
+            }
+          }
+          saveAll();
+          renderProducts();
+          renderDashboard();
+          showAlert('Prix de vente mis à jour !', 'success');
+        }
         }
       }
       document.getElementById('productsList').innerHTML = html;
