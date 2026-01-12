@@ -778,7 +778,7 @@
 
     function renderAll() {
       renderDashboard();
-      renderProducts();
+      renderAll();
       renderHistory();
       applyTranslations();
     }
@@ -885,12 +885,19 @@
 
     function deleteProduct(id) {
       if (!window.confirm(t('deleteConfirm'))) return;
+      // Marquer le produit comme supprimé dans l'historique
+      for (var i = 0; i < sales.length; i++) {
+        if (sales[i].productId === id && !sales[i].productDeleted) {
+          sales[i].productName = sales[i].productName + ' (deleted)';
+          sales[i].productDeleted = true;
+        }
+      }
       var filtered = [];
       for (var i = 0; i < products.length; i++) { if (products[i].id !== id) filtered.push(products[i]); }
       products = filtered;
       removeSelected(id);
       saveAll();
-      renderProducts();
+      renderAll();
       showAlert(t('deleteSuccess'), 'success');
     }
 
